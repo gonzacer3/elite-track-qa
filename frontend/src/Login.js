@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import logo from "./assets/logoelitecorp.jpeg"; // Asegúrate de tener logo.png en src/assets/
+import logo from "./assets/logoelitecorp.jpeg";
 
 function Login() {
   const [username, setUsername] = useState("");
@@ -18,6 +18,7 @@ function Login() {
       const { token, role } = res.data;
 
       localStorage.setItem("token", token);
+      localStorage.setItem("username", username);
 
       if (role === "consultor") {
         navigate("/dashboard-consultor");
@@ -27,6 +28,8 @@ function Login() {
         navigate("/dashboard-gerencia");
       } else if (role === "cliente") {
         navigate("/dashboard-cliente");
+      } else {
+        alert("Rol desconocido: " + role);
       }
     } catch (err) {
       alert("Credenciales inválidas ❌");
@@ -66,19 +69,22 @@ const styles = {
     justifyContent: "center",
     alignItems: "center",
     height: "100vh",
-    backgroundColor: "#f4f4f4",
+    background: "linear-gradient(135deg, #1e3c72, #2a5298)",
+    fontFamily: "Roboto, sans-serif",
   },
   card: {
     backgroundColor: "#fff",
     padding: "30px",
-    borderRadius: "10px",
-    boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
+    borderRadius: "12px",
+    boxShadow: "0 4px 20px rgba(0,0,0,0.2)",
     width: "320px",
     textAlign: "center",
   },
   logo: {
     width: "100px",
     marginBottom: "20px",
+    borderRadius: "8px",
+    boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
   },
   title: {
     marginBottom: "20px",
@@ -88,7 +94,7 @@ const styles = {
     width: "100%",
     padding: "10px",
     marginBottom: "15px",
-    borderRadius: "5px",
+    borderRadius: "6px",
     border: "1px solid #ccc",
   },
   button: {
@@ -97,8 +103,12 @@ const styles = {
     backgroundColor: "#1e3c72",
     color: "#fff",
     border: "none",
-    borderRadius: "5px",
+    borderRadius: "6px",
     cursor: "pointer",
+    transition: "background 0.3s ease",
+  },
+  buttonHover: {
+    backgroundColor: "#2a5298",
   },
 };
 
