@@ -12,7 +12,7 @@ app.get("/", (req, res) => {
   res.send("Servidor funcionando ✅");
 });
 
-// Ruta de login (texto plano)
+// Ruta de login
 app.post("/login", async (req, res) => {
   const { username, password } = req.body;
 
@@ -37,7 +37,8 @@ app.post("/login", async (req, res) => {
       { expiresIn: "1h" }
     );
 
-    res.json({ token });
+    // Devolver token y rol
+    res.json({ token, role: user.role });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Error en el servidor" });
