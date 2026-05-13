@@ -3,15 +3,18 @@
 Sistema de trazabilidad y control de calidad para proyectos de software.  
 Este repositorio contiene el código y la documentación del proyecto **EliteTrack QA**, desarrollado con **React, Node.js y SQL**.
 
-##  Tecnologías
-- **Frontend:** React
-- **Backend:** Node.js (Express)
-- **Base de Datos:** SQL
+## 🚀 Tecnologías
+- **Frontend:** React (login, dashboards por rol, UI)
+- **Backend:** Node.js (Express, JWT, RBAC)
+- **Base de Datos:** MySQL
 - **QA Tools:** JMeter, k6
+- **UI Framework:** Material UI (MUI v5)
+- **Gráficos:** Recharts
+- **HTTP Client:** Axios
 
-##  Estructura del proyecto
+## 📂 Estructura del proyecto
 elite-track-qa/
-├── frontend/        # Aplicación React (login, carga de evidencias, UI)
+├── frontend/        # Aplicación React (login, dashboards con MUI + Recharts)
 ├── backend/         # API Node.js (RBAC, auditoría, endpoints)
 ├── database/        # Scripts SQL (usuarios, roles, auditoría, evidencias)
 ├── docs/            # Documentación QA (plan de calidad, RTM, matriz de riesgos, UML)
@@ -19,36 +22,37 @@ elite-track-qa/
 
 Código
 
-##  Instalación
+## ⚙️ Instalación
 
 ### Clonar el repositorio
 ```bash
 git clone https://github.com/tuusuario/elite-track-qa.git
 cd elite-track-qa
+
 Backend (Node.js)
-bash
 cd backend
-npm init -y
-npm install express mysql2
+npm install
+node server.js
+
 Frontend (React)
-bash
 cd ../frontend
-npx create-react-app .
-npm start  
+npm install
+npm start
+Dependencias principales
+npm install react-router-dom axios recharts @mui/material @mui/icons-material @emotion/react @emotion/styled
+🧪 QA y Pruebas
+Pruebas funcionales: Validación de login, RBAC, carga de evidencias, notificaciones, auditoría.
 
-QA y Pruebas
-Pruebas funcionales: Validación de RF01–RF04 (login, RBAC, carga de evidencias, notificaciones, auditoría).
-
-Pruebas de rendimiento: Simulación de 50 usuarios concurrentes con JMeter/k6.
+Pruebas de rendimiento: Simulación de usuarios concurrentes con JMeter/k6.
 
 Pruebas de seguridad: Validación de roles y expiración de sesión (15 min).
 
-Pruebas de usabilidad: Tiempo de aprendizaje < 30 minutos.
+Pruebas de usabilidad: Dashboards con diseño profesional (Material UI + Recharts).
 
-Documentación
+📊 Documentación
 Toda la documentación del proyecto (Plan de Calidad, Matriz de Riesgos, RTM, UML) se encuentra en la carpeta /docs.
 
-Equipo
+👥 Equipo
 Gamarra Marcos
 
 Fabricio Toscano
