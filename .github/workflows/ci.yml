@@ -38,10 +38,22 @@ jobs:
 
       - name: Inicializar base de datos
         working-directory: backend
+        env:
+          DB_HOST: 127.0.0.1
+          DB_USER: root
+          DB_PASSWORD: 2003
+          DB_NAME: elite_track
         run: node initDB.js
 
       - name: Ejecutar tests con cobertura
         working-directory: backend
+        env:
+          DB_HOST: 127.0.0.1
+          DB_USER: root
+          DB_PASSWORD: 2003
+          DB_NAME: elite_track
+          NODE_ENV: test
+          CI: true
         run: npm test
 
       - name: Subir reporte de cobertura

@@ -8,7 +8,7 @@ router.get("/hitos-proximos", verificarToken, async (req, res) => {
   try {
     const [rows] = await pool.query(`
       SELECT * FROM hitos 
-      WHERE fecha_vencimiento BETWEEN NOW() AND DATE_ADD(NOW(), INTERVAL 7 DAY)
+      WHERE fecha_vencimiento BETWEEN NOW() AND DATE_ADD(NOW(), INTERVAL 2 DAY)
       ORDER BY fecha_vencimiento ASC
     `);
     res.json(rows);
