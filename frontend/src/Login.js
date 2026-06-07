@@ -2,35 +2,33 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import logo from "./assets/logoelitecorp.jpeg";
-
+ 
 function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
-
+ 
   const handleLogin = async () => {
     try {
       const res = await axios.post("http://localhost:3001/api/auth/login", {
         username,
         password,
       });
-
+ 
       const { token, role } = res.data;
-
-      // 💾 Guardamos los datos necesarios en el almacenamiento local
+ 
       localStorage.setItem("token", token);
       localStorage.setItem("username", username);
-      localStorage.setItem("userRole", role); // 🔥 Clave para que ProtectedRoute no te rebote
-
-      // 🚀 Redirección inteligente adaptada a mayúsculas, minúsculas y roles de ELITECORP
-      if (role === "Consultor" || role === "admin" || role === "Admin") {
-        navigate("/dashboard-consultor"); 
-      } else if (role === "QA" || role === "qa") {
-        navigate("/dashboard-qa");
-      } else if (role === "Direccion" || role === "Gerente") {
-        navigate("/dashboard-gerencia");
-      } else if (role === "Cliente" || role === "cliente") {
-        navigate("/dashboard-cliente");
+      localStorage.setItem("userRole", role); // FIX: guardar rol para ProtectedRoute
+ 
+      if (role === "Consultor") {
+       navigate("/dashboard-consultor"); 
+      } else if (role === "QA") {
+       navigate("/dashboard-qa");
+      } else if (role === "Direccion") {
+       navigate("/dashboard-gerencia");
+      } else if (role === "Cliente") {
+       navigate("/dashboard-cliente");
       } else {
         alert("Rol desconocido: " + role);
       }
@@ -38,7 +36,7 @@ function Login() {
       alert("Credenciales inválidas ❌");
     }
   };
-
+ 
   return (
     <div style={styles.container}>
       <div style={styles.card}>
@@ -65,7 +63,7 @@ function Login() {
     </div>
   );
 }
-
+ 
 const styles = {
   container: {
     display: "flex",
@@ -110,6 +108,9 @@ const styles = {
     cursor: "pointer",
     transition: "background 0.3s ease",
   },
+  buttonHover: {
+    backgroundColor: "#2a5298",
+  },
 };
-
+ 
 export default Login;

@@ -5,35 +5,38 @@ import ConsultorDashboard from "./components/ConsultorDashboard";
 import QADashboard from "./components/QADashboard";
 import GerenciaDashboard from "./components/GerenciaDashboard";
 import ClienteDashboard from "./components/ClienteDashboard";
-
+ 
 // 🛡️ Componente Guardián para proteger las rutas por Rol
 const ProtectedRoute = ({ children, allowedRoles }) => {
+  // Simulamos levantar el usuario y su rol desde el almacenamiento local
   const userRole = localStorage.getItem("userRole"); 
   const isAuthenticated = localStorage.getItem("token");
-
+ 
   if (!isAuthenticated) {
+    // Si no está logueado, patitas a la calle (al Login)
     return <Navigate to="/" replace />;
   }
-
+ 
   if (allowedRoles && !allowedRoles.includes(userRole)) {
+    // Si está logueado pero quiere entrar a un panel que no le corresponde
     return <Navigate to="/" replace />;
   }
-
+ 
   return children;
 };
-
+ 
 function App() {
   return (
     <Router>
       <Routes>
         {/* Ruta pública principal */}
         <Route path="/" element={<Login />} />
-
+ 
         {/* 🔒 Dashboards protegidos estrictamente por rol según ELITECORP */}
         <Route 
           path="/dashboard-consultor" 
           element={
-            <ProtectedRoute allowedRoles={["Consultor", "Admin", "admin"]}>
+            <ProtectedRoute allowedRoles={["Consultor", "Admin"]}>
               <ConsultorDashboard />
             </ProtectedRoute>
           } 
@@ -42,7 +45,7 @@ function App() {
         <Route 
           path="/dashboard-qa" 
           element={
-            <ProtectedRoute allowedRoles={["QA", "Admin", "admin", "qa"]}>
+            <ProtectedRoute allowedRoles={["QA", "Admin"]}>
               <QADashboard />
             </ProtectedRoute>
           } 
@@ -51,7 +54,7 @@ function App() {
         <Route 
           path="/dashboard-gerencia" 
           element={
-            <ProtectedRoute allowedRoles={["Gerente", "Direccion", "Admin", "admin"]}>
+            <ProtectedRoute allowedRoles={["Direccion", "Admin"]}>
               <GerenciaDashboard />
             </ProtectedRoute>
           } 
@@ -60,17 +63,17 @@ function App() {
         <Route 
           path="/dashboard-cliente" 
           element={
-            <ProtectedRoute allowedRoles={["Cliente", "Admin", "admin", "cliente"]}>
+            <ProtectedRoute allowedRoles={["Cliente", "Admin"]}>
               <ClienteDashboard />
             </ProtectedRoute>
           } 
         />
-
+ 
         {/* Redirección por si meten cualquier otra URL inválida */}
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="*" replace to="/" />
       </Routes>
     </Router>
   );
 }
-
+ 
 export default App;
