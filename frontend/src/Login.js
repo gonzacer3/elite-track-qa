@@ -10,7 +10,7 @@ function Login() {
 
   const handleLogin = async () => {
     try {
-      const res = await axios.post("http://localhost:3001/login", {
+      const res = await axios.post("http://localhost:3001/api/auth/login", {
         username,
         password,
       });
@@ -20,14 +20,14 @@ function Login() {
       localStorage.setItem("token", token);
       localStorage.setItem("username", username);
 
-      if (role === "consultor") {
-        navigate("/dashboard-consultor");
-      } else if (role === "qa") {
-        navigate("/dashboard-qa");
-      } else if (role === "gerencia") {
-        navigate("/dashboard-gerencia");
-      } else if (role === "cliente") {
-        navigate("/dashboard-cliente");
+      if (role === "Consultor") {
+       navigate("/dashboard-consultor"); 
+      } else if (role === "QA") {
+       navigate("/dashboard-qa");
+      } else if (role === "Direccion") {
+       navigate("/dashboard-gerencia");
+      } else if (role === "Cliente") {
+       navigate("/dashboard-cliente");
       } else {
         alert("Rol desconocido: " + role);
       }
