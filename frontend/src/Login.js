@@ -17,17 +17,20 @@ function Login() {
 
       const { token, role } = res.data;
 
+      // 💾 Guardamos los datos necesarios en el almacenamiento local
       localStorage.setItem("token", token);
       localStorage.setItem("username", username);
+      localStorage.setItem("userRole", role); // 🔥 Clave para que ProtectedRoute no te rebote
 
-      if (role === "Consultor") {
-       navigate("/dashboard-consultor"); 
-      } else if (role === "QA") {
-       navigate("/dashboard-qa");
-      } else if (role === "Direccion") {
-       navigate("/dashboard-gerencia");
-      } else if (role === "Cliente") {
-       navigate("/dashboard-cliente");
+      // 🚀 Redirección inteligente adaptada a mayúsculas, minúsculas y roles de ELITECORP
+      if (role === "Consultor" || role === "admin" || role === "Admin") {
+        navigate("/dashboard-consultor"); 
+      } else if (role === "QA" || role === "qa") {
+        navigate("/dashboard-qa");
+      } else if (role === "Direccion" || role === "Gerente") {
+        navigate("/dashboard-gerencia");
+      } else if (role === "Cliente" || role === "cliente") {
+        navigate("/dashboard-cliente");
       } else {
         alert("Rol desconocido: " + role);
       }
@@ -106,9 +109,6 @@ const styles = {
     borderRadius: "6px",
     cursor: "pointer",
     transition: "background 0.3s ease",
-  },
-  buttonHover: {
-    backgroundColor: "#2a5298",
   },
 };
 

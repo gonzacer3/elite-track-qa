@@ -1,123 +1,105 @@
 import React, { useState, useEffect } from "react";
-import { Grid, Card, CardContent, Typography } from "@mui/material";
-import { Business, Folder, ThumbUp } from "@mui/icons-material";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, LineChart, Line } from "recharts";
-
-const dataProyectos = [
-  { name: "Proy A", avance: 80 },
-  { name: "Proy B", avance: 60 },
-  { name: "Proy C", avance: 90 },
-];
-
-const dataKPIs = [
-  { name: "Ene", costo: 50, ingresos: 70 },
-  { name: "Feb", costo: 55, ingresos: 75 },
-  { name: "Mar", costo: 60, ingresos: 85 },
-];
+import { useNavigate } from "react-router-dom";
+import { Grid, Card, CardContent, Typography, Box, Avatar, Button } from "@mui/material";
+import { Business, Folder, ThumbUp, ExitToApp, History } from "@mui/icons-material";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, LineChart, Line, ResponsiveContainer } from "recharts";
 
 function GerenciaDashboard() {
-  // Estado para los logs reales de auditoría
+  const navigate = useNavigate();
   const [auditoria, setAuditoria] = useState([]);
-  // Estado para las métricas generales de gerencia
   const [metrics, setMetrics] = useState({ activos: 0, completados: 0, satisfaccion: "0%" });
 
   useEffect(() => {
-    // 1. Traer logs reales del backend (ej: quién modificó un plan o subió evidencia)
     fetch("http://localhost:5000/api/auditoria")
       .then((res) => res.json())
-      .then((data) => {
-        // Formateamos los logs que vienen de la base de datos
-        const logs = data.map((log) => `${log.usuario} - ${log.accion} (${new Date(log.fecha).toLocaleDateString()})`);
-        setAuditoria(logs);
-      })
-      .catch((err) => {
-        console.error("Error cargando logs de auditoría:", err);
-        // Fallback descriptivo si no hay registros o no existe el endpoint aún
-        setAuditoria(["No se registran acciones recientes en el log de auditoría."]);
-      });
+      .then((data) => setAuditoria(data.map((log) => `${log.usuario} - ${log.accion}`)))
+      .catch(() => setAuditoria(["No hay registros recientes."]));
 
-    // 2. Traer KPIs reales de proyectos
     fetch("http://localhost:5000/api/dashboard/gerencia")
       .then((res) => res.json())
       .then((data) => setMetrics(data))
-      .catch(() => {
-        // Mantener valores de simulación coherentes si no está la API financiera
-        setMetrics({ activos: 5, completados: 12, satisfaccion: "88%" });
-      });
+      .catch(() => setMetrics({ activos: 5, completados: 12, satisfaccion: "88%" }));
   }, []);
 
+  const handleLogout = () => {
+    localStorage.clear();
+    navigate("/");
+  };
+
   return (
-    <div style={{ padding: "30px" }}>
-      <Typography variant="h4" color="primary" gutterBottom style={{ fontWeight: "bold" }}>
-        Gerencia Dashboard — ELITECORP
-      </Typography>
+    <Box sx={{ p: 4, backgroundColor: "#f8fafc", minHeight: "100vh" }}>
+      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 4 }}>
+        <Box>
+          <Typography variant="h4" sx={{ fontWeight: 700, color: "#0f172a" }}>Gerencia Command Center</Typography>
+          <Typography color="text.secondary">Reportes Ejecutivos | EliteCorp</Typography>
+        </Box>
+        <Button variant="outlined" color="inherit" startIcon={<ExitToApp />} onClick={handleLogout}>Cerrar Sesión</Button>
+      </Box>
 
-      {/* Tarjetas Dinámicas */}
-      <Grid container spacing={3}>
-        <Grid item xs={4}>
-          <Card>
-            <CardContent>
-              <Folder color="primary" />
-              <Typography variant="h6">Proyectos Activos</Typography>
-              <Typography variant="h5">{metrics.activos}</Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={4}>
-          <Card>
-            <CardContent>
-              <Business color="secondary" />
-              <Typography variant="h6">Proyectos Completados</Typography>
-              <Typography variant="h5">{metrics.completados}</Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={4}>
-          <Card>
-            <CardContent>
-              <ThumbUp color="success" />
-              <Typography variant="h6">Satisfacción General</Typography>
-              <Typography variant="h5">{metrics.satisfaccion}</Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
-
-      {/* Gráficos */}
-      <Grid container spacing={3} style={{ marginTop: "20px" }}>
-        <Grid item xs={6}>
-          <BarChart width={400} height={300} data={dataProyectos}>
-            <CartesianGrid stroke="#ccc" />
-            <XAxis dataKey="name" />
-            <YAxis />
-            <Tooltip />
-            <Bar dataKey="avance" fill="#1976d2" />
-          </BarChart>
-        </Grid>
-        <Grid item xs={6}>
-          <LineChart width={400} height={300} data={dataKPIs}>
-            <CartesianGrid stroke="#ccc" />
-            <XAxis dataKey="name" />
-            <YAxis />
-            <Tooltip />
-            <Line type="monotone" dataKey="costo" stroke="#d32f2f" strokeWidth={2} />
-            <Line type="monotone" dataKey="ingresos" stroke="#388e3c" strokeWidth={2} />
-          </LineChart>
-        </Grid>
-      </Grid>
-
-      {/* Trazabilidad y Auditoría */}
-      <Typography variant="h6" style={{ marginTop: "30px", fontWeight: "bold" }}>
-        Registro de Auditoría (Trazabilidad)
-      </Typography>
-      <ul style={{ marginTop: "10px", backgroundColor: "#f5f5f5", padding: "15px 30px", borderRadius: "4px" }}>
-        {auditoria.map((item, index) => (
-          <li key={index} style={{ marginBottom: "8px", fontFamily: "monospace", color: "#333" }}>
-            {item}
-          </li>
+      {/* Stats Corporativas */}
+      <Grid container spacing={3} sx={{ mb: 4 }}>
+        {[
+          { title: "Proyectos Activos", value: metrics.activos, icon: <Folder />, color: "#3b82f6" },
+          { title: "Completados", value: metrics.completados, icon: <Business />, color: "#8b5cf6" },
+          { title: "Satisfacción", value: metrics.satisfaccion, icon: <ThumbUp />, color: "#10b981" },
+        ].map((item, i) => (
+          <Grid item xs={4} key={i}>
+            <Card sx={{ boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)", borderRadius: 3 }}>
+              <CardContent sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                <Avatar sx={{ bgcolor: `${item.color}20`, color: item.color }}>{item.icon}</Avatar>
+                <Box>
+                  <Typography variant="body2" color="text.secondary">{item.title}</Typography>
+                  <Typography variant="h5" sx={{ fontWeight: 800 }}>{item.value}</Typography>
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
         ))}
-      </ul>
-    </div>
+      </Grid>
+
+      {/* Gráficos Responsivos */}
+      <Grid container spacing={3}>
+        <Grid item xs={6}>
+          <Card sx={{ p: 3, borderRadius: 3 }}>
+            <Typography variant="h6" sx={{ mb: 2 }}>Avance de Proyectos</Typography>
+            <ResponsiveContainer width="100%" height={250}>
+              <BarChart data={[{name: "A", avance: 80}, {name: "B", avance: 60}, {name: "C", avance: 90}]}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="avance" fill="#3b82f6" radius={[6, 6, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </Card>
+        </Grid>
+        <Grid item xs={6}>
+          <Card sx={{ p: 3, borderRadius: 3 }}>
+            <Typography variant="h6" sx={{ mb: 2 }}>KPI Financiero (Costo vs Ingreso)</Typography>
+            <ResponsiveContainer width="100%" height={250}>
+              <LineChart data={[{name: "Ene", c: 50, i: 70}, {name: "Feb", c: 55, i: 75}, {name: "Mar", c: 60, i: 85}]}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Line type="monotone" dataKey="c" stroke="#ef4444" strokeWidth={3} name="Costo" />
+                <Line type="monotone" dataKey="i" stroke="#10b981" strokeWidth={3} name="Ingresos" />
+              </LineChart>
+            </ResponsiveContainer>
+          </Card>
+        </Grid>
+      </Grid>
+
+      {/* Auditoría Estilizada */}
+      <Card sx={{ mt: 3, p: 3, borderRadius: 3 }}>
+        <Typography variant="h6" sx={{ mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
+          <History /> Registro de Auditoría
+        </Typography>
+        <Box sx={{ backgroundColor: "#f1f5f9", p: 2, borderRadius: 2, fontFamily: "monospace", fontSize: "0.9rem" }}>
+          {auditoria.map((log, i) => <div key={i} style={{ marginBottom: "5px" }}>{`> ${log}`}</div>)}
+        </Box>
+      </Card>
+    </Box>
   );
 }
 

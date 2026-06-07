@@ -8,17 +8,14 @@ import ClienteDashboard from "./components/ClienteDashboard";
 
 // 🛡️ Componente Guardián para proteger las rutas por Rol
 const ProtectedRoute = ({ children, allowedRoles }) => {
-  // Simulamos levantar el usuario y su rol desde el almacenamiento local
   const userRole = localStorage.getItem("userRole"); 
   const isAuthenticated = localStorage.getItem("token");
 
   if (!isAuthenticated) {
-    // Si no está logueado, patitas a la calle (al Login)
     return <Navigate to="/" replace />;
   }
 
   if (allowedRoles && !allowedRoles.includes(userRole)) {
-    // Si está logueado pero quiere entrar a un panel que no le corresponde
     return <Navigate to="/" replace />;
   }
 
@@ -36,7 +33,7 @@ function App() {
         <Route 
           path="/dashboard-consultor" 
           element={
-            <ProtectedRoute allowedRoles={["Consultor", "Admin"]}>
+            <ProtectedRoute allowedRoles={["Consultor", "Admin", "admin"]}>
               <ConsultorDashboard />
             </ProtectedRoute>
           } 
@@ -45,7 +42,7 @@ function App() {
         <Route 
           path="/dashboard-qa" 
           element={
-            <ProtectedRoute allowedRoles={["QA", "Admin"]}>
+            <ProtectedRoute allowedRoles={["QA", "Admin", "admin", "qa"]}>
               <QADashboard />
             </ProtectedRoute>
           } 
@@ -54,7 +51,7 @@ function App() {
         <Route 
           path="/dashboard-gerencia" 
           element={
-            <ProtectedRoute allowedRoles={["Gerente", "Admin"]}>
+            <ProtectedRoute allowedRoles={["Gerente", "Direccion", "Admin", "admin"]}>
               <GerenciaDashboard />
             </ProtectedRoute>
           } 
@@ -63,14 +60,14 @@ function App() {
         <Route 
           path="/dashboard-cliente" 
           element={
-            <ProtectedRoute allowedRoles={["Cliente", "Admin"]}>
+            <ProtectedRoute allowedRoles={["Cliente", "Admin", "admin", "cliente"]}>
               <ClienteDashboard />
             </ProtectedRoute>
           } 
         />
 
         {/* Redirección por si meten cualquier otra URL inválida */}
-        <Route path="*" replace to="/" />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
   );
