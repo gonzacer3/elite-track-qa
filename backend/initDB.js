@@ -17,9 +17,13 @@ async function init() {
     `);
 
     // Agregar columna email si la tabla ya existe sin ella (migracion)
-    await pool.query(`
-      ALTER TABLE users ADD COLUMN IF NOT EXISTS email VARCHAR(100) DEFAULT NULL
+    const [cols] = await pool.query(`
+      SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+      WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = 'email'
     `);
+    if (cols.length === 0) {
+      await pool.query(`ALTER TABLE users ADD COLUMN email VARCHAR(100) DEFAULT NULL`);
+    }
 
     await pool.query(`
       CREATE TABLE IF NOT EXISTS evidencias (
