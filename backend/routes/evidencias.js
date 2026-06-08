@@ -6,7 +6,15 @@ const { verificarToken, soloRol } = require("../middleware/auth");
 // GET /api/evidencias
 router.get("/", verificarToken, async (req, res) => {
   try {
-    const [rows] = await pool.query("SELECT * FROM evidencias ORDER BY fecha DESC");
+    let rows;
+    if (req.user.role === "Cliente") {
+      [rows] = await pool.query(
+        "SELECT * FROM evidencias WHERE usuario = ? ORDER BY fecha DESC",
+        [req.user.username]
+      );
+    } else {
+      [rows] = await pool.query("SELECT * FROM evidencias ORDER BY fecha DESC");
+    }
     res.json(rows);
   } catch (err) {
     res.status(500).json({ message: "Error al obtener evidencias" });
@@ -15,30 +23,34 @@ router.get("/", verificarToken, async (req, res) => {
 
 // POST /api/evidencias
 router.post("/", verificarToken, soloRol("Consultor", "QA"), async (req, res) => {
-  const { titulo, descripcion, archivo } = req.body;
+  const { titulo, descripcion, archivo, archivo_nombre, archivo_tipo, proyecto, hito } = req.body;
 
   if (!titulo || !descripcion) {
     return res.status(400).json({ message: "Título y descripción requeridos" });
   }
 
-  // Validar tamaño archivo (max 20MB simulado en base64 length)
-  if (archivo && archivo.length > 20 * 1024 * 1024) {
+  // Validar tamaño archivo (max 20MB en base64)
+  if (archivo && archivo.length > 20 * 1024 * 1024 * 1.37) {
     return res.status(400).json({ message: "Archivo supera el límite de 20MB" });
   }
 
   try {
     const [result] = await pool.query(
-      "INSERT INTO evidencias (titulo, descripcion, archivo, usuario, estado) VALUES (?, ?, ?, ?, ?)",
-      [titulo, descripcion, archivo || null, req.user.username, "pendiente"]
+      `INSERT INTO evidencias 
+        (titulo, descripcion, archivo, archivo_nombre, archivo_tipo, proyecto, hito, usuario, estado) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [titulo, descripcion, archivo || null, archivo_nombre || null, archivo_tipo || null,
+       proyecto || null, hito || null, req.user.username, "pendiente"]
     );
 
     await pool.query(
       "INSERT INTO auditoria (usuario, accion) VALUES (?, ?)",
-      [req.user.username, `SUBIO_EVIDENCIA: ${titulo}`]
+      [req.user.username, `SUBIO_EVIDENCIA: ${titulo}${proyecto ? ` [${proyecto}]` : ''}`]
     );
 
     res.status(201).json({ message: "Evidencia creada", id: result.insertId });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ message: "Error al crear evidencia" });
   }
 });
