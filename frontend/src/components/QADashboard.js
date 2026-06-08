@@ -25,7 +25,7 @@ function QADashboard() {
       .then((res) => res.json())
       .then((data) => setNotificaciones(Array.isArray(data) ? data : []))
       .catch(() => setNotificaciones([]));
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleLogout = () => {
     localStorage.clear();

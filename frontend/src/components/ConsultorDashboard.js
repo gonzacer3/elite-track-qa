@@ -2,8 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Grid, Card, CardContent, Typography, Button, Box, Avatar, TextField, Alert } from "@mui/material";
 import { Assignment, CheckCircle, ExitToApp, Send, Upload } from "@mui/icons-material";
-import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
-
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 const COLORS = ["#3b82f6", "#f59e0b", "#10b981"];
 const BASE_URL = "http://localhost:3001";
 
@@ -24,8 +23,7 @@ function ConsultorDashboard() {
       .then((res) => res.json())
       .then((data) => setEvidencias(Array.isArray(data) ? data : []))
       .catch(() => setEvidencias([]));
-  }, []);
-
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const handleLogout = () => {
     localStorage.clear();
     navigate("/");

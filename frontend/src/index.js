@@ -7,6 +7,7 @@ import reportWebVitals from './reportWebVitals';
 // Refresh token automático — RNF02
 // Renueva el token cada 10 minutos si el usuario está activo
 let inactivityTimer;
+// eslint-disable-next-line no-unused-vars
 let refreshTimer;
 
 function resetInactivityTimer() {
