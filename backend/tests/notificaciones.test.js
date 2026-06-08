@@ -105,4 +105,24 @@ describe("Notificaciones (RF03)", () => {
       .get("/api/notificaciones/hitos-proximos");
     expect(res.statusCode).toBe(401);
   });
+
+  test("CP04: Sistema detecta hitos próximos a vencer (< 48hs)", async () => {
+    // Insertar un hito que vence en 24hs
+    await pool.query(`
+      INSERT INTO hitos (titulo, descripcion, fecha_vencimiento, proyecto, notificado)
+      VALUES ('Hito Test CP04', 'Test alerta', DATE_ADD(NOW(), INTERVAL 24 HOUR), 'EliteTrack QP', 0)
+    `);
+
+    const res = await request(app)
+      .get("/api/notificaciones/hitos-proximos")
+      .set("Authorization", `Bearer ${tokenAdmin}`);
+
+    expect(res.statusCode).toBe(200);
+    expect(Array.isArray(res.body)).toBe(true);
+    expect(res.body.length).toBeGreaterThan(0);
+    expect(res.body[0].titulo).toBeDefined();
+
+    // Limpiar
+    await pool.query("DELETE FROM hitos WHERE titulo = 'Hito Test CP04'");
+  });
 });

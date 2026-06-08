@@ -12,6 +12,15 @@ app.use(cors({
 app.use(express.json());
 
 // Rutas
+// Scheduler de alertas por email
+const { verificarYEnviarAlertas } = require("./routes/email");
+if (require.main === module || process.env.NODE_ENV !== "test") {
+  setInterval(async () => {
+    const enviados = await verificarYEnviarAlertas();
+    if (enviados > 0) console.log(`📧 Alertas enviadas: ${enviados}`);
+  }, 60 * 60 * 1000); // cada 1 hora
+}
+
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/evidencias", require("./routes/evidencias"));
 app.use("/api/notificaciones", require("./routes/notificaciones"));
