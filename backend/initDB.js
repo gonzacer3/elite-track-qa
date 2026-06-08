@@ -6,10 +6,12 @@ async function init() {
 
     await pool.query(`
       CREATE TABLE IF NOT EXISTS users (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        username VARCHAR(50) NOT NULL UNIQUE,
-        password VARCHAR(255) NOT NULL,
-        role ENUM('Consultor','QA','Direccion','Cliente') NOT NULL
+       id INT AUTO_INCREMENT PRIMARY KEY,
+       username VARCHAR(50) NOT NULL UNIQUE,
+       password VARCHAR(255) NOT NULL,
+        role ENUM('Consultor','QA','Direccion','Cliente') NOT NULL,
+       intentos_fallidos INT DEFAULT 0,
+       bloqueado_hasta DATETIME DEFAULT NULL
       )
     `);
 

@@ -83,4 +83,13 @@ describe("Notificaciones (RF03)", () => {
       .send({ mensaje: "Evidencia lista para revisión", usuario_destino: "qa" });
     expect(res.statusCode).toBe(201);
   });
+
+  test("Notificación sin usuario_destino va a 'todos'", async () => {
+    const res = await request(app)
+      .post("/api/notificaciones")
+      .set("Authorization", `Bearer ${tokenAdmin}`)
+      .send({ mensaje: "Mensaje sin destino específico" });
+    expect(res.statusCode).toBe(201);
+    expect(res.body.id).toBeDefined();
+  });
 });
