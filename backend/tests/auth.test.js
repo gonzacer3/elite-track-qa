@@ -131,5 +131,12 @@ describe("Auth / RBAC (RF01)", () => {
       .set("Authorization", "Bearer token_completamente_invalido");
     expect(res.statusCode).toBe(401);
   });
-  
+
+  test("Token sin prefijo Bearer devuelve 401", async () => {
+    const res = await request(app)
+      .get("/api/evidencias")
+      .set("Authorization", "solo_token_sin_bearer");
+    expect(res.statusCode).toBe(401);
+  });
+
 });
