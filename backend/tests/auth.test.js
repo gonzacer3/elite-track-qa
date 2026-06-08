@@ -101,4 +101,23 @@ describe("Auth / RBAC (RF01)", () => {
     expect(res.statusCode).toBe(200);
     expect(res.body.token).toBeDefined();
   });
+
+  test("RNF02: Refresh token válido devuelve nuevo token", async () => {
+    const loginRes = await request(app)
+      .post("/api/auth/login")
+      .send({ username: "admin", password: "Admin1234!" });
+    const token = loginRes.body.token;
+
+    const res = await request(app)
+      .post("/api/auth/refresh")
+      .set("Authorization", `Bearer ${token}`);
+    expect(res.statusCode).toBe(200);
+    expect(res.body.token).toBeDefined();
+    expect(res.body.token).not.toBe(token);
+  });
+
+  test("RNF02: Refresh sin token devuelve 401", async () => {
+    const res = await request(app).post("/api/auth/refresh");
+    expect(res.statusCode).toBe(401);
+  });
 });
