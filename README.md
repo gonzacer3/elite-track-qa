@@ -1,64 +1,126 @@
-# EliteTrack QA
+Abrí el archivo README.md que está en la raíz del proyecto y reemplazá todo el contenido por esto:
+markdown# EliteTrack QP 🛡️
 
-Sistema de trazabilidad y control de calidad para proyectos de software.  
-Este repositorio contiene el código y la documentación del proyecto **EliteTrack QA**, desarrollado con **React, Node.js y SQL**.
+Sistema de gestión de calidad para EliteCorp Consulting Group.  
+Materia: Aseguramiento de Calidad de los Sistemas — IFTS N°4  
+Profesor: Eduardo Luis Teruya  
+Equipo: Gamarra, Toscano, Vázquez, Cerimedo, Valencia
 
-## 🚀 Tecnologías
-- **Frontend:** React (login, dashboards por rol, UI)
-- **Backend:** Node.js (Express, JWT, RBAC)
-- **Base de Datos:** MySQL
-- **QA Tools:** JMeter, k6
-- **UI Framework:** Material UI (MUI v5)
-- **Gráficos:** Recharts
-- **HTTP Client:** Axios
+---
 
-## 📂 Estructura del proyecto
-elite-track-qa/
-├── frontend/        # Aplicación React (login, dashboards con MUI + Recharts)
-├── backend/         # API Node.js (RBAC, auditoría, endpoints)
-├── database/        # Scripts SQL (usuarios, roles, auditoría, evidencias)
-├── docs/            # Documentación QA (plan de calidad, RTM, matriz de riesgos, UML)
-└── README.md        # Este archivo
+## Stack
 
-Código
+- **Backend:** Node.js + Express + MySQL
+- **Frontend:** React + Material UI + Recharts
+- **Tests:** Jest + Supertest
+- **CI/CD:** GitHub Actions
+- **Deploy:** Docker + Docker Compose
 
-## ⚙️ Instalación
+---
 
-### Clonar el repositorio
+## Requisitos
+
+- Node.js 18+
+- MySQL 8.0+
+- Docker (opcional)
+
+---
+
+## Variables de entorno
+
+Copiá `.env.example` a `.env` y completá los valores:
+
 ```bash
-git clone https://github.com/tuusuario/elite-track-qa.git
-cd elite-track-qa
+cp .env.example .env
+```
 
-Backend (Node.js)
+| Variable | Descripción | Default |
+|----------|-------------|---------|
+| DB_HOST | Host de MySQL | localhost |
+| DB_USER | Usuario de MySQL | root |
+| DB_PASS | Contraseña de MySQL | — |
+| DB_NAME | Nombre de la base | elite_track |
+| JWT_SECRET | Clave secreta para JWT | — |
+| PORT | Puerto del backend | 3001 |
+| FRONTEND_URL | URL del frontend (CORS) | http://localhost:3000 |
+
+---
+
+## Levantar el proyecto
+
+### Con Docker
+
+```bash
+docker-compose up --build
+```
+
+El sistema queda disponible en:
+- Frontend: http://localhost
+- Backend: http://localhost:3001
+
+### Sin Docker
+
+**Backend:**
+```bash
 cd backend
 npm install
-node server.js
+node initDB.js      # crea tablas y usuarios de prueba
+npm run dev
+```
 
-Frontend (React)
-cd ../frontend
+**Frontend:**
+```bash
+cd frontend
 npm install
 npm start
-Dependencias principales
-npm install react-router-dom axios recharts @mui/material @mui/icons-material @emotion/react @emotion/styled
-🧪 QA y Pruebas
-Pruebas funcionales: Validación de login, RBAC, carga de evidencias, notificaciones, auditoría.
+```
 
-Pruebas de rendimiento: Simulación de usuarios concurrentes con JMeter/k6.
+---
 
-Pruebas de seguridad: Validación de roles y expiración de sesión (15 min).
+## Usuarios de prueba
 
-Pruebas de usabilidad: Dashboards con diseño profesional (Material UI + Recharts).
+| Usuario | Contraseña | Rol |
+|---------|------------|-----|
+| admin | Admin1234! | Direccion |
+| qa | QA1234! | QA |
+| consultor | Consultor1234! | Consultor |
+| cliente | Cliente1234! | Cliente |
 
-📊 Documentación
-Toda la documentación del proyecto (Plan de Calidad, Matriz de Riesgos, RTM, UML) se encuentra en la carpeta /docs.
+---
 
-👥 Equipo
-Gamarra Marcos
+## Tests
 
-Fabricio Toscano
+```bash
+cd backend
+npm test
+```
 
-Nicolás Vázquez
+Cobertura mínima exigida: **88% branches / 88% lines / 90% functions**.
 
-Gonzalo Cerimedo
+---
 
-Valencia Lautaro
+## Flujo de branching (Git Flow)
+main         ← solo recibe merges desde develop, con PR aprobado
+develop      ← integración continua
+feature/*    ← una rama por módulo o funcionalidad
+hotfix/*     ← correcciones urgentes en producción
+
+**Regla de integración (QI):**
+1. Tests pasados con cobertura ≥ 90% del módulo
+2. PR aprobado hacia `develop`
+3. CI/CD verde antes del merge
+
+---
+
+## Endpoints principales
+
+| Método | Ruta | Roles |
+|--------|------|-------|
+| POST | /api/auth/login | Público |
+| GET | /api/evidencias | Todos |
+| POST | /api/evidencias | Consultor, QA |
+| PATCH | /api/evidencias/:id/revisar | QA |
+| GET | /api/notificaciones | Todos |
+| POST | /api/notificaciones | Todos |
+| GET | /api/notificaciones/hitos-proximos | Todos |
+| GET | /api/auditoria | Direccion, QA |
