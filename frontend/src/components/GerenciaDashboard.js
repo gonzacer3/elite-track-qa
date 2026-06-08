@@ -31,7 +31,8 @@ function GerenciaDashboard() {
       .then((res) => res.json())
       .then((data) => setHitos(Array.isArray(data) ? data : []))
       .catch(() => setHitos([]));
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  
 
   const handleLogout = () => {
     localStorage.clear();
