@@ -20,15 +20,15 @@ async function verificarYEnviarAlertas() {
     `);
 
     for (const hito of hitos) {
-      // Obtener todos los usuarios para notificar
+      // Obtener usuarios con email para notificar
       const [usuarios] = await pool.query(
-        "SELECT username FROM users WHERE role IN ('QA', 'Direccion')"
+        "SELECT username, email FROM users WHERE role IN ('QA', 'Direccion') AND email IS NOT NULL"
       );
 
       for (const usuario of usuarios) {
         await transporter.sendMail({
           from: `"EliteTrack QP" <${process.env.SMTP_USER}>`,
-          to: process.env.SMTP_DEST || process.env.SMTP_USER,
+          to: usuario.email,
           subject: `⚠️ Hito próximo a vencer: ${hito.titulo}`,
           html: `
             <h2>Alerta de Hito — EliteTrack QP</h2>
