@@ -1,33 +1,80 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Grid, Card, CardContent, Typography, Button, Box, Avatar } from "@mui/material";
-import { Assignment, CheckCircle, ExitToApp, Send } from "@mui/icons-material";
+import { Grid, Card, CardContent, Typography, Button, Box, Avatar, TextField, Alert } from "@mui/material";
+import { Assignment, CheckCircle, ExitToApp, Send, Upload } from "@mui/icons-material";
 import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 
-const COLORS = ["#3b82f6", "#f59e0b"];
+const COLORS = ["#3b82f6", "#f59e0b", "#10b981"];
+const BASE_URL = "http://localhost:3001";
 
 function ConsultorDashboard() {
   const navigate = useNavigate();
   const username = localStorage.getItem("username") || "Consultor";
-  
-  const [tareas, setTareas] = useState([
-    { id: 1, proyecto: "Ecosistema EliteCorp", descripcion: "Modelado BD", estado: "Asignada" },
-    { id: 2, proyecto: "Facturación", descripcion: "Endpoint cobros", estado: "En Progreso" },
-  ]);
+  const token = localStorage.getItem("token");
+  const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
 
-  const handleLogout = () => { 
-    localStorage.clear(); 
-    navigate("/"); 
+  const [evidencias, setEvidencias] = useState([]);
+  const [titulo, setTitulo] = useState("");
+  const [descripcion, setDescripcion] = useState("");
+  const [mensaje, setMensaje] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    fetch(`${BASE_URL}/api/evidencias`, { headers })
+      .then((res) => res.json())
+      .then((data) => setEvidencias(Array.isArray(data) ? data : []))
+      .catch(() => setEvidencias([]));
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.clear();
+    navigate("/");
   };
 
-  const handleEnviarAQA = (id) => {
-    setTareas(tareas.map(t => t.id === id ? { ...t, estado: "Enviado a QA" } : t));
+  const handleSubirEvidencia = async () => {
+    if (!titulo || !descripcion) {
+      setMensaje({ tipo: "error", texto: "Título y descripción son obligatorios." });
+      return;
+    }
+    setLoading(true);
+    try {
+      const res = await fetch(`${BASE_URL}/api/evidencias`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ titulo, descripcion }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setMensaje({ tipo: "success", texto: "Evidencia enviada a QA correctamente." });
+        setTitulo("");
+        setDescripcion("");
+        // Recargar evidencias
+        const resEv = await fetch(`${BASE_URL}/api/evidencias`, { headers });
+        const dataEv = await resEv.json();
+        setEvidencias(Array.isArray(dataEv) ? dataEv : []);
+      } else {
+        setMensaje({ tipo: "error", texto: data.message || "Error al subir evidencia." });
+      }
+    } catch {
+      setMensaje({ tipo: "error", texto: "Error de conexión con el servidor." });
+    }
+    setLoading(false);
   };
+
+  const pendientes = evidencias.filter((e) => e.estado === "pendiente").length;
+  const aprobadas = evidencias.filter((e) => e.estado === "aprobada").length;
+  const rechazadas = evidencias.filter((e) => e.estado === "rechazada").length;
+
+  const dataPie = [
+    { name: "Pendientes", v: pendientes },
+    { name: "Aprobadas", v: aprobadas },
+    { name: "Rechazadas", v: rechazadas },
+  ];
 
   return (
     <Box sx={{ p: { xs: 2, md: 4 }, backgroundColor: "#f8fafc", minHeight: "100vh" }}>
-      
-      {/* Header Corporativo */}
+
+      {/* Header */}
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 4 }}>
         <Box>
           <Typography variant="h4" sx={{ fontWeight: 700, color: "#0f172a" }}>Consultor Command Center</Typography>
@@ -36,12 +83,12 @@ function ConsultorDashboard() {
         <Button variant="outlined" color="inherit" startIcon={<ExitToApp />} onClick={handleLogout}>Cerrar Sesión</Button>
       </Box>
 
-      {/* Tarjetas de Métricas */}
+      {/* Métricas reales */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
         {[
-          { title: "Tareas Activas", value: tareas.filter(t => t.estado !== "Enviado a QA").length, icon: <Assignment />, color: "#3b82f6" },
-          { title: "Enviadas a QA", value: tareas.filter(t => t.estado === "Enviado a QA").length, icon: <Send />, color: "#f59e0b" },
-          { title: "Total Completadas", value: 15, icon: <CheckCircle />, color: "#10b981" },
+          { title: "Pendientes", value: pendientes, icon: <Assignment />, color: "#3b82f6" },
+          { title: "Aprobadas", value: aprobadas, icon: <CheckCircle />, color: "#10b981" },
+          { title: "Rechazadas", value: rechazadas, icon: <Send />, color: "#ef4444" },
         ].map((item, i) => (
           <Grid item xs={12} md={4} key={i}>
             <Card sx={{ boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)", borderRadius: 3 }}>
@@ -57,45 +104,17 @@ function ConsultorDashboard() {
         ))}
       </Grid>
 
-      {/* Sección de Gráficos */}
+      {/* Gráfico + Formulario */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} md={8}>
-          <Card sx={{ p: 3, borderRadius: 3, height: 350, display: 'flex', flexDirection: 'column' }}>
-            <Typography variant="h6" sx={{ mb: 2 }}>Curva de Progreso Semanal</Typography>
-            <Box sx={{ flexGrow: 1, width: '100%', minHeight: 0 }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart 
-                  data={[{name: "Lun", p: 70, r: 65}, {name: "Mar", p: 75, r: 70}, {name: "Mié", p: 80, r: 75}]}
-                  margin={{ top: 5, right: 20, left: -20, bottom: 5 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                  <XAxis dataKey="name" fontSize={12} tickLine={false} axisLine={false} />
-                  <YAxis fontSize={12} tickLine={false} axisLine={false} />
-                  <Tooltip />
-                  <Line type="monotone" dataKey="p" name="Plan" stroke="#0f172a" strokeWidth={3} dot={{ r: 4 }} />
-                  <Line type="monotone" dataKey="r" name="Real" stroke="#3b82f6" strokeWidth={3} dot={{ r: 4 }} />
-                </LineChart>
-              </ResponsiveContainer>
-            </Box>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12} md={4}>
-          <Card sx={{ p: 3, borderRadius: 3, height: 350, display: 'flex', flexDirection: 'column' }}>
-            <Typography variant="h6" sx={{ mb: 2 }}>Distribución de Tareas</Typography>
-            <Box sx={{ flexGrow: 1, width: '100%', minHeight: 0 }}>
+        <Grid item xs={12} md={5}>
+          <Card sx={{ p: 3, borderRadius: 3, height: 350, display: "flex", flexDirection: "column" }}>
+            <Typography variant="h6" sx={{ mb: 2 }}>Distribución de Evidencias</Typography>
+            <Box sx={{ flexGrow: 1, width: "100%", minHeight: 0 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
-                  <Pie 
-                    data={[{name: "Activas", v: 2}, {name: "QA", v: 1}]} 
-                    dataKey="v" 
-                    cx="50%" cy="50%" 
-                    innerRadius="60%" 
-                    outerRadius="80%" 
-                    paddingAngle={5}
-                  >
+                  <Pie data={dataPie} dataKey="v" cx="50%" cy="50%" innerRadius="50%" outerRadius="75%" paddingAngle={5}>
                     {COLORS.map((color, index) => (
-                      <Cell key={`cell-${index}`} fill={color} />
+                      <Cell key={index} fill={color} />
                     ))}
                   </Pie>
                   <Tooltip />
@@ -104,45 +123,73 @@ function ConsultorDashboard() {
             </Box>
           </Card>
         </Grid>
+
+        {/* Formulario de carga de evidencia — RF02 / Caso de Uso B */}
+        <Grid item xs={12} md={7}>
+          <Card sx={{ p: 3, borderRadius: 3, height: 350, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+            <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
+              <Upload /> Cargar Evidencia
+            </Typography>
+            {mensaje && (
+              <Alert severity={mensaje.tipo} sx={{ mb: 2 }} onClose={() => setMensaje(null)}>
+                {mensaje.texto}
+              </Alert>
+            )}
+            <TextField
+              label="Título"
+              value={titulo}
+              onChange={(e) => setTitulo(e.target.value)}
+              fullWidth
+              size="small"
+              sx={{ mb: 2 }}
+            />
+            <TextField
+              label="Descripción"
+              value={descripcion}
+              onChange={(e) => setDescripcion(e.target.value)}
+              fullWidth
+              multiline
+              rows={3}
+              size="small"
+              sx={{ mb: 2 }}
+            />
+            <Button
+              variant="contained"
+              startIcon={<Send />}
+              onClick={handleSubirEvidencia}
+              disabled={loading}
+              sx={{ borderRadius: 2, textTransform: "none", bgcolor: "#0f172a" }}
+            >
+              {loading ? "Enviando..." : "Enviar a QA"}
+            </Button>
+          </Card>
+        </Grid>
       </Grid>
 
-      {/* Tabla de Asignaciones */}
+      {/* Lista de evidencias reales */}
       <Card sx={{ p: 3, borderRadius: 3 }}>
-        <Typography variant="h6" sx={{ mb: 2, color: "#0f172a", fontWeight: 700 }}>Asignaciones en Tiempo Real</Typography>
-        {tareas.map(t => (
-          <Box key={t.id} sx={{ 
-            display: "flex", 
-            justifyContent: "space-between", 
-            alignItems: "center", 
-            p: 2, 
-            mb: 1,
-            backgroundColor: t.estado === "Enviado a QA" ? "#f8fafc" : "transparent",
-            borderBottom: "1px solid #f1f5f9",
-            borderRadius: 2
-          }}>
-            <Box>
-              <Typography sx={{ fontWeight: 600 }}>{t.proyecto}</Typography>
-              <Typography variant="body2" color="text.secondary">{t.descripcion}</Typography>
+        <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>Mis Evidencias</Typography>
+        {evidencias.length === 0 ? (
+          <Typography color="text.secondary">No hay evidencias cargadas aún.</Typography>
+        ) : (
+          evidencias.map((e, i) => (
+            <Box key={i} sx={{
+              display: "flex", justifyContent: "space-between", alignItems: "center",
+              p: 2, mb: 1, borderBottom: "1px solid #f1f5f9", borderRadius: 2
+            }}>
+              <Box>
+                <Typography sx={{ fontWeight: 600 }}>{e.titulo}</Typography>
+                <Typography variant="body2" color="text.secondary">{e.descripcion}</Typography>
+              </Box>
+              <Typography sx={{
+                fontWeight: 700, fontSize: "0.85rem",
+                color: e.estado === "aprobada" ? "#10b981" : e.estado === "rechazada" ? "#ef4444" : "#f59e0b"
+              }}>
+                {e.estado.toUpperCase()}
+              </Typography>
             </Box>
-            <Box sx={{ textAlign: "right" }}>
-              {t.estado !== "Enviado a QA" ? (
-                <Button 
-                  size="small" 
-                  variant="contained" 
-                  startIcon={<Send />}
-                  onClick={() => handleEnviarAQA(t.id)}
-                  sx={{ borderRadius: 2, textTransform: 'none' }}
-                >
-                  Enviar a QA
-                </Button>
-              ) : (
-                <Typography color="success.main" sx={{ fontWeight: 700, fontSize: "0.85rem" }}>
-                  🔬 En Revisión QA
-                </Typography>
-              )}
-            </Box>
-          </Box>
-        ))}
+          ))
+        )}
       </Card>
     </Box>
   );
