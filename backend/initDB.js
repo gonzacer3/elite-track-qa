@@ -27,13 +27,14 @@ async function init() {
       )
     `);
 
-    await pool.query(`
+      await pool.query(`
       CREATE TABLE IF NOT EXISTS hitos (
         id INT AUTO_INCREMENT PRIMARY KEY,
         titulo VARCHAR(100) NOT NULL,
         descripcion TEXT,
         fecha_vencimiento DATETIME NOT NULL,
-        proyecto VARCHAR(100)
+        proyecto VARCHAR(100),
+        notificado TINYINT DEFAULT 0
       )
     `);
 
