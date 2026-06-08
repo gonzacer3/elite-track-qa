@@ -92,4 +92,17 @@ describe("Notificaciones (RF03)", () => {
     expect(res.statusCode).toBe(201);
     expect(res.body.id).toBeDefined();
   });
+
+  test("Sin token no puede enviar notificación — devuelve 401", async () => {
+    const res = await request(app)
+      .post("/api/notificaciones")
+      .send({ mensaje: "Sin token" });
+    expect(res.statusCode).toBe(401);
+  });
+
+  test("Sin token no puede ver hitos próximos — devuelve 401", async () => {
+    const res = await request(app)
+      .get("/api/notificaciones/hitos-proximos");
+    expect(res.statusCode).toBe(401);
+  });
 });
