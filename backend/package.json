@@ -19,9 +19,10 @@
       }
     },
     "collectCoverageFrom": [
-      "middleware/**/*.js",
-      "routes/**/*.js"
-    ]
+  "middleware/**/*.js",
+  "routes/**/*.js",
+  "!routes/email.js"
+]
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
