@@ -28,7 +28,7 @@ async function verificarYEnviarAlertas() {
       for (const usuario of usuarios) {
         await transporter.sendMail({
           from: `"EliteTrack QP" <${process.env.SMTP_USER}>`,
-          to: process.env.SMTP_USER, // en prod sería el email del usuario
+          to: process.env.SMTP_DEST || process.env.SMTP_USER,
           subject: `⚠️ Hito próximo a vencer: ${hito.titulo}`,
           html: `
             <h2>Alerta de Hito — EliteTrack QP</h2>
