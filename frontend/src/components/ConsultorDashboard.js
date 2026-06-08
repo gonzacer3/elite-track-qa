@@ -167,7 +167,7 @@ function ConsultorDashboard() {
 
         {/* Formulario */}
         <Grid item xs={12} md={8}>
-          <Card sx={{ p: 3, borderRadius: 3, height: 420, overflowY: "auto" }}>
+          <Card sx={{ p: 3, borderRadius: 3 }}>
             <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
               <Upload /> Cargar Evidencia
             </Typography>
@@ -177,10 +177,10 @@ function ConsultorDashboard() {
               </Alert>
             )}
             <Grid container spacing={2}>
-              <Grid item xs={12} md={6}>
+              <Grid item xs={12}>
                 <TextField label="Título *" value={titulo} onChange={(e) => setTitulo(e.target.value)} fullWidth size="small" />
               </Grid>
-              <Grid item xs={12} md={6}>
+              <Grid item xs={12} sm={6}>
                 <FormControl fullWidth size="small">
                   <InputLabel>Proyecto</InputLabel>
                   <Select value={proyecto} onChange={(e) => setProyecto(e.target.value)} label="Proyecto">
@@ -188,7 +188,7 @@ function ConsultorDashboard() {
                   </Select>
                 </FormControl>
               </Grid>
-              <Grid item xs={12} md={6}>
+              <Grid item xs={12} sm={6}>
                 <FormControl fullWidth size="small">
                   <InputLabel>Hito</InputLabel>
                   <Select value={hito} onChange={(e) => setHito(e.target.value)} label="Hito">
@@ -196,14 +196,14 @@ function ConsultorDashboard() {
                   </Select>
                 </FormControl>
               </Grid>
-              <Grid item xs={12} md={6}>
-                <Button variant="outlined" component="label" fullWidth sx={{ height: 40, textTransform: "none" }}>
-                  {archivoNombre ? archivoNombre : "📎 Adjuntar archivo (max 20MB)"}
-                  <input type="file" hidden onChange={handleArchivo} />
-                </Button>
-              </Grid>
               <Grid item xs={12}>
                 <TextField label="Descripción *" value={descripcion} onChange={(e) => setDescripcion(e.target.value)} fullWidth multiline rows={3} size="small" />
+              </Grid>
+              <Grid item xs={12}>
+                <Button variant="outlined" component="label" fullWidth sx={{ textTransform: "none", justifyContent: "flex-start", px: 2 }}>
+                  {archivoNombre ? `📎 ${archivoNombre}` : "📎 Adjuntar archivo (máx. 20MB)"}
+                  <input type="file" hidden onChange={handleArchivo} />
+                </Button>
               </Grid>
               <Grid item xs={12}>
                 <Button
@@ -212,7 +212,7 @@ function ConsultorDashboard() {
                   onClick={handleSubirEvidencia}
                   disabled={loading}
                   fullWidth
-                  sx={{ borderRadius: 2, textTransform: "none", bgcolor: "#0f172a" }}
+                  sx={{ borderRadius: 2, textTransform: "none", bgcolor: "#0f172a", py: 1.2 }}
                 >
                   {loading ? "Enviando..." : "Enviar a QA"}
                 </Button>
@@ -220,7 +220,6 @@ function ConsultorDashboard() {
             </Grid>
           </Card>
         </Grid>
-      </Grid>
 
       {/* Lista de evidencias con filtro */}
       <Card sx={{ p: 3, borderRadius: 3 }}>
