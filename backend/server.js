@@ -22,6 +22,7 @@ if (require.main === module || process.env.NODE_ENV !== "test") {
 }
 
 app.use("/api/auth", require("./routes/auth"));
+app.use("/api/auth", require("./routes/refresh"));
 app.use("/api/evidencias", require("./routes/evidencias"));
 app.use("/api/notificaciones", require("./routes/notificaciones"));
 app.use("/api/auditoria", require("./routes/auditoria"));
