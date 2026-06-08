@@ -74,4 +74,31 @@ describe("Auth / RBAC (RF01)", () => {
       .send({ username: "noexiste", password: "1234" });
     expect(res.statusCode).toBe(401);
   });
+
+  test("CP-SEC04: Cuenta bloqueada tras 5 intentos fallidos devuelve 423", async () => {
+    // 5 intentos fallidos
+    for (let i = 0; i < 5; i++) {
+      await request(app)
+        .post("/api/auth/login")
+        .send({ username: "consultor", password: "wrongpassword" });
+    }
+    // El sexto debe devolver 423
+    const res = await request(app)
+      .post("/api/auth/login")
+      .send({ username: "consultor", password: "wrongpassword" });
+    expect(res.statusCode).toBe(423);
+  });
+
+  test("CP-SEC06: Login exitoso resetea el contador de intentos fallidos", async () => {
+    // Resetear posible bloqueo previo directo en DB
+    await pool.query(
+      "UPDATE users SET intentos_fallidos = 0, bloqueado_hasta = NULL WHERE username = ?",
+      ["consultor"]
+    );
+    const res = await request(app)
+      .post("/api/auth/login")
+      .send({ username: "consultor", password: "Consultor1234!" });
+    expect(res.statusCode).toBe(200);
+    expect(res.body.token).toBeDefined();
+  });
 });
