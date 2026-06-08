@@ -116,8 +116,20 @@ describe("Auth / RBAC (RF01)", () => {
     expect(res.body.token).not.toBe(token);
   });
 
-  test("RNF02: Refresh sin token devuelve 401", async () => {
-    const res = await request(app).post("/api/auth/refresh");
-    expect(res.statusCode).toBe(401);
+  test("RNF02: Refresh token válido devuelve nuevo token", async () => {
+    const loginRes = await request(app)
+      .post("/api/auth/login")
+      .send({ username: "admin", password: "Admin1234!" });
+    const token = loginRes.body.token;
+
+    // Esperar 1 segundo para que el JWT tenga timestamp diferente
+    await new Promise((resolve) => setTimeout(resolve, 1100));
+
+    const res = await request(app)
+      .post("/api/auth/refresh")
+      .set("Authorization", `Bearer ${token}`);
+    expect(res.statusCode).toBe(200);
+    expect(res.body.token).toBeDefined();
+    expect(res.body.token).not.toBe(token);
   });
 });
