@@ -9,11 +9,21 @@ async function init() {
        id INT AUTO_INCREMENT PRIMARY KEY,
        username VARCHAR(50) NOT NULL UNIQUE,
        password VARCHAR(255) NOT NULL,
-        role ENUM('Consultor','QA','Direccion','Cliente') NOT NULL,
+       role ENUM('Consultor','QA','Direccion','Cliente') NOT NULL,
+       email VARCHAR(100) DEFAULT NULL,
        intentos_fallidos INT DEFAULT 0,
        bloqueado_hasta DATETIME DEFAULT NULL
       )
     `);
+
+    // Agregar columna email si la tabla ya existe sin ella (migracion)
+    const [cols] = await pool.query(`
+      SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+      WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = 'email'
+    `);
+    if (cols.length === 0) {
+      await pool.query(`ALTER TABLE users ADD COLUMN email VARCHAR(100) DEFAULT NULL`);
+    }
 
     await pool.query(`
       CREATE TABLE IF NOT EXISTS evidencias (
@@ -29,10 +39,9 @@ async function init() {
        estado ENUM('pendiente','aprobada','rechazada') DEFAULT 'pendiente',
        fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
-
     `);
 
-      await pool.query(`
+    await pool.query(`
       CREATE TABLE IF NOT EXISTS hitos (
         id INT AUTO_INCREMENT PRIMARY KEY,
         titulo VARCHAR(100) NOT NULL,
@@ -64,18 +73,27 @@ async function init() {
     // Usuarios de prueba
     const bcrypt = require("bcryptjs");
     const usuarios = [
-      { username: "admin", password: "Admin1234!", role: "Direccion" },
-      { username: "qa", password: "QA1234!", role: "QA" },
-      { username: "consultor", password: "Consultor1234!", role: "Consultor" },
-      { username: "cliente", password: "Cliente1234!", role: "Cliente" },
+      { username: "admin",     password: "Admin1234!",     role: "Direccion", email: "qa.elitetrack+admin@gmail.com"     },
+      { username: "qa",        password: "QA1234!",        role: "QA",        email: "qa.elitetrack+qa@gmail.com"        },
+      { username: "consultor", password: "Consultor1234!", role: "Consultor", email: "qa.elitetrack+consultor@gmail.com" },
+      { username: "cliente",   password: "Cliente1234!",   role: "Cliente",   email: "qa.elitetrack+cliente@gmail.com"   },
     ];
 
     for (const u of usuarios) {
       const [exists] = await pool.query("SELECT id FROM users WHERE username = ?", [u.username]);
       if (exists.length === 0) {
         const hash = await bcrypt.hash(u.password, 10);
-        await pool.query("INSERT INTO users (username, password, role) VALUES (?, ?, ?)", [u.username, hash, u.role]);
-        console.log(`Usuario creado: ${u.username}`);
+        await pool.query(
+          "INSERT INTO users (username, password, role, email) VALUES (?, ?, ?, ?)",
+          [u.username, hash, u.role, u.email]
+        );
+        console.log(`Usuario creado: ${u.username} (${u.email})`);
+      } else {
+        // Actualizar email si el usuario ya existe pero no tiene email cargado
+        await pool.query(
+          "UPDATE users SET email = ? WHERE username = ? AND email IS NULL",
+          [u.email, u.username]
+        );
       }
     }
 

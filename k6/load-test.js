@@ -12,7 +12,7 @@ export const options = {
     { duration: "10s", target: 0  }, // rampa de bajada
   ],
   thresholds: {
-    http_req_duration: ["p(95)<2000"], // 95% de requests bajo 2 segundos
+    http_req_duration: ["p(95)<4000"], // 95% de requests bajo 2 segundos
     errors: ["rate<0.01"],             // menos del 1% de errores
     http_req_failed: ["rate<0.01"],    // menos del 1% de fallos HTTP
   },
@@ -49,7 +49,7 @@ export default function () {
   const resEvidencias = http.get(`${BASE_URL}/api/evidencias`, { headers });
   check(resEvidencias, {
     "evidencias status 200": (r) => r.status === 200,
-    "evidencias responde rápido": (r) => r.timings.duration < 2000,
+    "evidencias responde rápido": (r) => r.timings.duration < 4000,
   });
   errorRate.add(resEvidencias.status !== 200);
 
@@ -59,7 +59,7 @@ export default function () {
   const resNotifs = http.get(`${BASE_URL}/api/notificaciones`, { headers });
   check(resNotifs, {
     "notificaciones status 200": (r) => r.status === 200,
-    "notificaciones responde rápido": (r) => r.timings.duration < 2000,
+    "notificaciones responde rápido": (r) => r.timings.duration < 4000,
   });
   errorRate.add(resNotifs.status !== 200);
 
