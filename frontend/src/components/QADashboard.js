@@ -115,7 +115,22 @@ function QADashboard() {
               <Box>
                 <Typography sx={{ fontWeight: 600 }}>{e.titulo}</Typography>
                 <Typography variant="body2" color="text.secondary">{e.descripcion}</Typography>
-                <Typography variant="caption" color="text.secondary">Por: {e.usuario}</Typography>
+                <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", mt: 0.5 }}>
+                  <Typography variant="caption" color="text.secondary">Por: {e.usuario}</Typography>
+                  {e.proyecto && (
+                    <Box sx={{ bgcolor: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 1, px: 1, py: 0.2 }}>
+                      <Typography variant="caption" sx={{ color: "#1d4ed8", fontWeight: 600 }}>📁 {e.proyecto}</Typography>
+                    </Box>
+                  )}
+                  {e.hito && (
+                    <Box sx={{ bgcolor: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 1, px: 1, py: 0.2 }}>
+                      <Typography variant="caption" sx={{ color: "#15803d", fontWeight: 600 }}>🏁 {e.hito}</Typography>
+                    </Box>
+                  )}
+                  <Typography variant="caption" color="text.secondary">
+                    🕐 {new Date(e.fecha).toLocaleString("es-AR")}
+                  </Typography>
+                </Box>
               </Box>
               <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
                 <Chip
