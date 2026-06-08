@@ -1,6 +1,11 @@
+require("dotenv").config();
 const jwt = require("jsonwebtoken");
 
-const JWT_SECRET = "elitetrack_secret_2026";
+const JWT_SECRET = process.env.JWT_SECRET || "elitetrack_secret_2026_CHANGE_IN_PROD";
+
+if (process.env.NODE_ENV === "production" && process.env.JWT_SECRET === undefined) {
+  throw new Error("ERROR: JWT_SECRET no está definido en variables de entorno");
+}
 
 function verificarToken(req, res, next) {
   const authHeader = req.headers["authorization"];
