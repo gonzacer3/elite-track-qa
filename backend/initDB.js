@@ -17,14 +17,19 @@ async function init() {
 
     await pool.query(`
       CREATE TABLE IF NOT EXISTS evidencias (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        titulo VARCHAR(100) NOT NULL,
-        descripcion TEXT NOT NULL,
-        archivo TEXT,
-        usuario VARCHAR(50) NOT NULL,
-        estado ENUM('pendiente','aprobada','rechazada') DEFAULT 'pendiente',
-        fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+       id INT AUTO_INCREMENT PRIMARY KEY,
+       titulo VARCHAR(100) NOT NULL,
+       descripcion TEXT,
+       archivo LONGTEXT,
+       archivo_nombre VARCHAR(255) DEFAULT NULL,
+       archivo_tipo VARCHAR(100) DEFAULT NULL,
+       proyecto VARCHAR(100) DEFAULT NULL,
+       hito VARCHAR(100) DEFAULT NULL,
+       usuario VARCHAR(50),
+       estado ENUM('pendiente','aprobada','rechazada') DEFAULT 'pendiente',
+       fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
+
     `);
 
       await pool.query(`
