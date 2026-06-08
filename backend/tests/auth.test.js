@@ -27,7 +27,7 @@ describe("Auth / RBAC (RF01)", () => {
     const jwt = require("jsonwebtoken");
     const decoded = jwt.decode(res.body.token);
     expect(decoded.role).toBe("Direccion");
-    expect(decoded.exp - decoded.iat).toBe(900); // 15 minutos
+    expect(decoded.exp - decoded.iat).toBe(900);
   });
 
   test("CP-SEC03: Acceso denegado por rol incorrecto devuelve 403", async () => {
@@ -76,13 +76,16 @@ describe("Auth / RBAC (RF01)", () => {
   });
 
   test("CP-SEC04: Cuenta bloqueada tras 5 intentos fallidos devuelve 423", async () => {
-    // 5 intentos fallidos
+    // Resetear bloqueo previo
+    await pool.query(
+      "UPDATE users SET intentos_fallidos = 0, bloqueado_hasta = NULL WHERE username = ?",
+      ["consultor"]
+    );
     for (let i = 0; i < 5; i++) {
       await request(app)
         .post("/api/auth/login")
         .send({ username: "consultor", password: "wrongpassword" });
     }
-    // El sexto debe devolver 423
     const res = await request(app)
       .post("/api/auth/login")
       .send({ username: "consultor", password: "wrongpassword" });
@@ -90,7 +93,6 @@ describe("Auth / RBAC (RF01)", () => {
   });
 
   test("CP-SEC06: Login exitoso resetea el contador de intentos fallidos", async () => {
-    // Resetear posible bloqueo previo directo en DB
     await pool.query(
       "UPDATE users SET intentos_fallidos = 0, bloqueado_hasta = NULL WHERE username = ?",
       ["consultor"]
@@ -108,21 +110,6 @@ describe("Auth / RBAC (RF01)", () => {
       .send({ username: "admin", password: "Admin1234!" });
     const token = loginRes.body.token;
 
-    const res = await request(app)
-      .post("/api/auth/refresh")
-      .set("Authorization", `Bearer ${token}`);
-    expect(res.statusCode).toBe(200);
-    expect(res.body.token).toBeDefined();
-    expect(res.body.token).not.toBe(token);
-  });
-
-  test("RNF02: Refresh token válido devuelve nuevo token", async () => {
-    const loginRes = await request(app)
-      .post("/api/auth/login")
-      .send({ username: "admin", password: "Admin1234!" });
-    const token = loginRes.body.token;
-
-    // Esperar 1 segundo para que el JWT tenga timestamp diferente
     await new Promise((resolve) => setTimeout(resolve, 1100));
 
     const res = await request(app)
@@ -131,5 +118,10 @@ describe("Auth / RBAC (RF01)", () => {
     expect(res.statusCode).toBe(200);
     expect(res.body.token).toBeDefined();
     expect(res.body.token).not.toBe(token);
+  });
+
+  test("RNF02: Refresh sin token devuelve 401", async () => {
+    const res = await request(app).post("/api/auth/refresh");
+    expect(res.statusCode).toBe(401);
   });
 });
