@@ -1,12 +1,20 @@
 require("dotenv").config();
-const pool = require("./db");
-
+const mysql = require("mysql2/promise");
+const bcrypt = require("bcryptjs");
 
 async function init() {
-  try {
-    await pool.query("USE elite_track");
+  const connection = await mysql.createConnection({
+    host: process.env.DB_HOST || "localhost",
+    user: process.env.DB_USER || "root",
+    password: process.env.DB_PASSWORD || "",
+    database: process.env.DB_NAME || "elite_track",
+  });
 
-    await pool.query(`
+  try {
+    await connection.query("CREATE DATABASE IF NOT EXISTS elite_track");
+    await connection.query("USE elite_track");
+
+    await connection.query(`
       CREATE TABLE IF NOT EXISTS users (
        id INT AUTO_INCREMENT PRIMARY KEY,
        username VARCHAR(50) NOT NULL UNIQUE,
@@ -18,16 +26,15 @@ async function init() {
       )
     `);
 
-    // Agregar columna email si la tabla ya existe sin ella (migracion)
-    const [cols] = await pool.query(`
+    const [cols] = await connection.query(`
       SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
       WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = 'email'
     `);
     if (cols.length === 0) {
-      await pool.query(`ALTER TABLE users ADD COLUMN email VARCHAR(100) DEFAULT NULL`);
+      await connection.query(`ALTER TABLE users ADD COLUMN email VARCHAR(100) DEFAULT NULL`);
     }
 
-    await pool.query(`
+    await connection.query(`
       CREATE TABLE IF NOT EXISTS evidencias (
        id INT AUTO_INCREMENT PRIMARY KEY,
        titulo VARCHAR(100) NOT NULL,
@@ -43,7 +50,7 @@ async function init() {
       )
     `);
 
-    await pool.query(`
+    await connection.query(`
       CREATE TABLE IF NOT EXISTS hitos (
         id INT AUTO_INCREMENT PRIMARY KEY,
         titulo VARCHAR(100) NOT NULL,
@@ -54,7 +61,7 @@ async function init() {
       )
     `);
 
-    await pool.query(`
+    await connection.query(`
       CREATE TABLE IF NOT EXISTS notificaciones (
         id INT AUTO_INCREMENT PRIMARY KEY,
         mensaje TEXT NOT NULL,
@@ -63,7 +70,7 @@ async function init() {
       )
     `);
 
-    await pool.query(`
+    await connection.query(`
       CREATE TABLE IF NOT EXISTS auditoria (
         id INT AUTO_INCREMENT PRIMARY KEY,
         usuario VARCHAR(50) NOT NULL,
@@ -72,8 +79,6 @@ async function init() {
       )
     `);
 
-    // Usuarios de prueba
-    const bcrypt = require("bcryptjs");
     const usuarios = [
       { username: "admin",     password: "Admin1234!",     role: "Direccion", email: "qa.elitetrack+admin@gmail.com"     },
       { username: "qa",        password: "QA1234!",        role: "QA",        email: "qa.elitetrack+qa@gmail.com"        },
@@ -82,35 +87,35 @@ async function init() {
     ];
 
     for (const u of usuarios) {
-      const [exists] = await pool.query("SELECT id FROM users WHERE username = ?", [u.username]);
+      const [exists] = await connection.query("SELECT id FROM users WHERE username = ?", [u.username]);
       if (exists.length === 0) {
         const hash = await bcrypt.hash(u.password, 10);
-        await pool.query(
+        await connection.query(
           "INSERT INTO users (username, password, role, email) VALUES (?, ?, ?, ?)",
           [u.username, hash, u.role, u.email]
         );
         console.log(`Usuario creado: ${u.username} (${u.email})`);
       } else {
-        // Actualizar email si el usuario ya existe pero no tiene email cargado
-        await pool.query(
+        await connection.query(
           "UPDATE users SET email = ? WHERE username = ? AND email IS NULL",
           [u.email, u.username]
         );
       }
     }
 
-    // Hito de prueba próximo
-    await pool.query(`
+    await connection.query(`
       INSERT INTO hitos (titulo, descripcion, fecha_vencimiento, proyecto)
       SELECT 'Revisión UAT', 'Revisión final con usuarios', DATE_ADD(NOW(), INTERVAL 3 DAY), 'EliteTrack QP'
       WHERE NOT EXISTS (SELECT 1 FROM hitos WHERE titulo = 'Revisión UAT')
     `);
 
     console.log("Base de datos inicializada correctamente ✅");
-    process.exit();
   } catch (err) {
     console.error("Error:", err);
     process.exit(1);
+  } finally {
+    await connection.end();
+    process.exit();
   }
 }
 
