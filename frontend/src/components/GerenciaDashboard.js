@@ -43,10 +43,14 @@ function GerenciaDashboard() {
   const totalEvidencias = evidencias.length;
   const satisfaccion = totalEvidencias > 0 ? Math.round((aprobadas / totalEvidencias) * 100) : 0;
 
-  const dataLinea = auditoria.slice(0, 7).map((a) => ({
-    name: new Date(a.fecha).toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit" }),
-    acciones: a.accion.startsWith("LOGIN") ? 1 : 2,
-  }));
+  const dataLinea = Object.values(
+    auditoria.reduce((acc, a) => {
+      const dia = new Date(a.fecha).toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit" });
+      if (!acc[dia]) acc[dia] = { name: dia, acciones: 0 };
+      acc[dia].acciones += 1;
+      return acc;
+    }, {})
+  ).slice(-7);
 
   return (
     <Box sx={{ display: "flex", minHeight: "100vh", backgroundColor: "#f1f5f9" }}>
