@@ -177,7 +177,7 @@ function QADashboard() {
                 notificaciones.slice(0, 5).map((n, i) => (
                   <Box key={i} sx={{ p: 1.5, mb: 1, bgcolor: "#f8fafc", borderRadius: 2, borderLeft: "3px solid #3b82f6" }}>
                     <Typography sx={{ fontSize: 13, fontWeight: 600, color: "#0f172a" }}>{n.mensaje}</Typography>
-                    <Typography sx={{ fontSize: 11, color: "#94a3b8", mt: 0.3 }}>{n.usuario_destino || "todos"}</Typography>
+                    <Typography sx={{ fontSize: 11, color: "#94a3b8", mt: 0.3 }}>{n.usuario || "todos"}</Typography>
                   </Box>
                 ))
               )}

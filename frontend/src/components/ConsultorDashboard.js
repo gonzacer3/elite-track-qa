@@ -230,7 +230,7 @@ function ConsultorDashboard() {
           </Grid>
 
           {/* Formulario */}
-          <Grid item xs={12} md={8}>
+          <Grid item xs={12} md={7}>
             <Card sx={{ p: 3, borderRadius: 3, boxShadow: "0 1px 3px rgba(0,0,0,0.08)", border: "1px solid #e2e8f0" }}>
               <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 3 }}>
                 <Upload sx={{ color: "#1e40af", fontSize: 20 }} />

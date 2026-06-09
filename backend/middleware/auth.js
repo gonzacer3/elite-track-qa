@@ -3,7 +3,7 @@ const jwt = require("jsonwebtoken");
 
 const JWT_SECRET = process.env.JWT_SECRET || "elitetrack_secret_2026_CHANGE_IN_PROD";
 
-if (process.env.NODE_ENV === "production" && process.env.JWT_SECRET === undefined) {
+if (process.env.NODE_ENV === "production" && !process.env.JWT_SECRET) {
   throw new Error("ERROR: JWT_SECRET no está definido en variables de entorno");
 }
 
