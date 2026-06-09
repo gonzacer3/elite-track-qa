@@ -169,8 +169,9 @@ function QADashboard() {
             </Card>
           </Grid>
           <Grid item xs={12} md={5}>
-            <Card sx={{ p: 3, borderRadius: 3, boxShadow: "0 1px 3px rgba(0,0,0,0.08)", border: "1px solid #e2e8f0", height: "100%" }}>
+            <Card sx={{ p: 3, borderRadius: 3, boxShadow: "0 1px 3px rgba(0,0,0,0.08)", border: "1px solid #e2e8f0" }}>
               <Typography sx={{ fontWeight: 700, color: "#0f172a", mb: 2 }}>Notificaciones Recientes</Typography>
+              <Box sx={{ maxHeight: 260, overflowY: "auto" }}>
               {notificaciones.length === 0 ? (
                 <Typography sx={{ color: "#94a3b8", fontSize: 14 }}>No hay notificaciones.</Typography>
               ) : (
@@ -181,6 +182,7 @@ function QADashboard() {
                   </Box>
                 ))
               )}
+              </Box>
             </Card>
           </Grid>
         </Grid>
