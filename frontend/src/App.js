@@ -70,7 +70,7 @@ function App() {
         />
  
         {/* Redirección por si meten cualquier otra URL inválida */}
-        <Route path="*" replace to="/" />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
   );
