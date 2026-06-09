@@ -20,11 +20,20 @@ router.get("/hitos-proximos", verificarToken, async (req, res) => {
 // GET /api/notificaciones
 router.get("/", verificarToken, async (req, res) => {
   try {
-    const [rows] = await pool.query(`
-      SELECT * FROM notificaciones 
-      WHERE usuario = ? OR usuario = 'todos'
-      ORDER BY fecha DESC
-    `, [req.user.username]);
+    let rows;
+    if (req.user.role === "Cliente") {
+      [rows] = await pool.query(`
+        SELECT * FROM notificaciones 
+        WHERE usuario = ?
+        ORDER BY fecha DESC
+      `, [req.user.username]);
+    } else {
+      [rows] = await pool.query(`
+        SELECT * FROM notificaciones 
+        WHERE usuario = ? OR usuario = 'todos'
+        ORDER BY fecha DESC
+      `, [req.user.username]);
+    }
     res.json(rows);
   } catch (err) {
     res.status(500).json({ message: "Error al obtener notificaciones" });

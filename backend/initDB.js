@@ -21,6 +21,7 @@ async function init() {
        password VARCHAR(255) NOT NULL,
        role ENUM('Consultor','QA','Direccion','Cliente') NOT NULL,
        email VARCHAR(100) DEFAULT NULL,
+       proyecto VARCHAR(100) DEFAULT NULL,
        intentos_fallidos INT DEFAULT 0,
        bloqueado_hasta DATETIME DEFAULT NULL
       )
@@ -34,13 +35,7 @@ async function init() {
       await connection.query(`ALTER TABLE users ADD COLUMN email VARCHAR(100) DEFAULT NULL`);
     }
 
-    const [colsVenc] = await connection.query(`
-      SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
-      WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'evidencias' AND COLUMN_NAME = 'fecha_vencimiento'
-    `);
-    if (colsVenc.length === 0) {
-      await connection.query(`ALTER TABLE evidencias ADD COLUMN fecha_vencimiento DATE DEFAULT NULL`);
-    }
+    
     await connection.query(`
       CREATE TABLE IF NOT EXISTS evidencias (
        id INT AUTO_INCREMENT PRIMARY KEY,
@@ -57,6 +52,14 @@ async function init() {
        fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
+    
+    const [colsVenc] = await connection.query(`
+      SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+      WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'evidencias' AND COLUMN_NAME = 'fecha_vencimiento'
+    `);
+    if (colsVenc.length === 0) {
+      await connection.query(`ALTER TABLE evidencias ADD COLUMN fecha_vencimiento DATE DEFAULT NULL`);
+    }
 
     await connection.query(`
       CREATE TABLE IF NOT EXISTS hitos (
@@ -92,6 +95,7 @@ async function init() {
       { username: "qa",        password: "QA1234!",        role: "QA",        email: "qa.elitetrack+qa@gmail.com"        },
       { username: "consultor", password: "Consultor1234!", role: "Consultor", email: "qa.elitetrack+consultor@gmail.com" },
       { username: "cliente",   password: "Cliente1234!",   role: "Cliente",   email: "qa.elitetrack+cliente@gmail.com"   },
+      { username: "projectalpha", password: "Cliente1234!", role: "Cliente", email: "qa.elitetrack+cliente@gmail.com" },
     ];
 
     for (const u of usuarios) {

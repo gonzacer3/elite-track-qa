@@ -9,8 +9,8 @@ router.get("/", verificarToken, async (req, res) => {
     let rows;
     if (req.user.role === "Cliente") {
       [rows] = await pool.query(
-        "SELECT * FROM evidencias WHERE usuario = ? ORDER BY fecha DESC",
-        [req.user.username]
+        "SELECT * FROM evidencias WHERE proyecto = ? ORDER BY fecha DESC",
+        [req.user.proyecto]
       );
     } else {
       [rows] = await pool.query("SELECT * FROM evidencias ORDER BY fecha DESC");

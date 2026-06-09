@@ -5,7 +5,7 @@ import { Security, Assignment, NotificationsActive, ExitToApp, TrendingUp, AddCi
 import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from "recharts";
 
 const BASE_URL = "http://localhost:3001";
-const PROYECTOS = ["EliteTrack QP", "Proyecto Alpha", "Proyecto Beta", "Otro"];
+const PROYECTOS = ["EliteTrack QP", "Proyecto Alpha"];
 
 function GerenciaDashboard() {
   const navigate = useNavigate();

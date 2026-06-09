@@ -9,7 +9,7 @@ import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recha
 
 const COLORS = ["#f59e0b", "#10b981", "#ef4444"];
 const BASE_URL = "http://localhost:3001";
-const PROYECTOS = ["EliteTrack QP", "Proyecto Alpha", "Proyecto Beta", "Otro"];
+const PROYECTOS = ["Proyecto Alpha"];
 
 function ConsultorDashboard() {
   const navigate = useNavigate();
