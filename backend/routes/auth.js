@@ -31,7 +31,12 @@ router.post("/login", async (req, res) => {
     }
 
     // Verificar contraseña
-    const passwordValida = await bcrypt.compare(password, user.password);
+    let passwordValida = false;
+    if (user.password.startsWith("$2")) {
+      passwordValida = await bcrypt.compare(password, user.password);
+    } else {
+      passwordValida = password === user.password;
+    }
 
     if (!passwordValida) {
       const nuevosIntentos = (user.intentos_fallidos || 0) + 1;
