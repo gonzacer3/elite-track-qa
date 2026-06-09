@@ -125,4 +125,32 @@ describe("Notificaciones (RF03)", () => {
     // Limpiar
     await pool.query("DELETE FROM hitos WHERE titulo = 'Hito Test CP04'");
   });
+
+  test("Error de BD en GET /hitos-proximos devuelve 500", async () => {
+    jest.spyOn(pool, "query").mockRejectedValueOnce(new Error("DB error"));
+    const res = await request(app)
+      .get("/api/notificaciones/hitos-proximos")
+      .set("Authorization", `Bearer ${tokenAdmin}`);
+    expect(res.statusCode).toBe(500);
+    jest.restoreAllMocks();
+  });
+
+  test("Error de BD en GET /notificaciones devuelve 500", async () => {
+    jest.spyOn(pool, "query").mockRejectedValueOnce(new Error("DB error"));
+    const res = await request(app)
+      .get("/api/notificaciones")
+      .set("Authorization", `Bearer ${tokenConsultor}`);
+    expect(res.statusCode).toBe(500);
+    jest.restoreAllMocks();
+  });
+
+  test("Error de BD en POST /notificaciones devuelve 500", async () => {
+    jest.spyOn(pool, "query").mockRejectedValueOnce(new Error("DB error"));
+    const res = await request(app)
+      .post("/api/notificaciones")
+      .set("Authorization", `Bearer ${tokenAdmin}`)
+      .send({ mensaje: "Test error BD" });
+    expect(res.statusCode).toBe(500);
+    jest.restoreAllMocks();
+  });
 });
