@@ -65,6 +65,16 @@ router.post("/", verificarToken, async (req, res) => {
   }
 });
 
+// GET /api/notificaciones/hitos
+router.get("/hitos", verificarToken, async (req, res) => {
+  try {
+    const [rows] = await pool.query("SELECT * FROM hitos ORDER BY fecha_vencimiento ASC");
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ message: "Error al obtener hitos" });
+  }
+});
+
 // POST /api/notificaciones/hitos
 router.post("/hitos", verificarToken, soloRol("Direccion"), async (req, res) => {
   const { titulo, descripcion, fecha_vencimiento, proyecto } = req.body;
