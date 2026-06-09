@@ -1,4 +1,4 @@
-require("dotenv").config();
+require("dotenv").config({ override: false });
 const mysql = require("mysql2/promise");
 const bcrypt = require("bcryptjs");
 
