@@ -9,9 +9,7 @@ import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recha
 
 const COLORS = ["#f59e0b", "#10b981", "#ef4444"];
 const BASE_URL = "http://localhost:3001";
-
 const PROYECTOS = ["EliteTrack QP", "Proyecto Alpha", "Proyecto Beta", "Otro"];
-const HITOS = ["Hito 1 - Inicio", "Hito 2 - Diseño", "Hito 3 - Desarrollo", "Hito 4 - QA", "Hito 5 - Cierre"];
 
 function ConsultorDashboard() {
   const navigate = useNavigate();
@@ -20,6 +18,7 @@ function ConsultorDashboard() {
   const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
 
   const [evidencias, setEvidencias] = useState([]);
+  const [hitosDB, setHitosDB] = useState([]);
   const [titulo, setTitulo] = useState("");
   const [descripcion, setDescripcion] = useState("");
   const [proyecto, setProyecto] = useState("");
@@ -40,6 +39,10 @@ function ConsultorDashboard() {
 
   useEffect(() => {
     cargarEvidencias();
+    fetch(`${BASE_URL}/api/notificaciones/hitos-proximos`, { headers })
+      .then((res) => res.json())
+      .then((data) => setHitosDB(Array.isArray(data) ? data : []))
+      .catch(() => setHitosDB([]));
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleLogout = () => {
@@ -73,6 +76,7 @@ function ConsultorDashboard() {
         headers,
         body: JSON.stringify({
           titulo, descripcion, proyecto, hito,
+          fecha_vencimiento: null,
           archivo, archivo_nombre: archivoNombre, archivo_tipo: archivoTipo,
         }),
       });
@@ -112,10 +116,7 @@ function ConsultorDashboard() {
       <Box sx={{
         width: 240,
         background: "linear-gradient(180deg, #0f172a 0%, #1e3a5f 100%)",
-        display: "flex",
-        flexDirection: "column",
-        p: 3,
-        flexShrink: 0,
+        display: "flex", flexDirection: "column", p: 3, flexShrink: 0,
       }}>
         <Box sx={{ mb: 4 }}>
           <Typography sx={{ color: "#93c5fd", fontSize: 11, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase", mb: 1 }}>
@@ -123,24 +124,16 @@ function ConsultorDashboard() {
           </Typography>
           <Typography sx={{ color: "#fff", fontSize: 18, fontWeight: 800 }}>Consultor</Typography>
         </Box>
-
         <Box sx={{ flex: 1 }}>
           <Typography sx={{ color: "#64748b", fontSize: 13, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", mb: 2 }}>
             Contenido
           </Typography>
-          {[
-            { label: "📊 Mis métricas" },
-            { label: "📤 Cargar evidencia" },
-            { label: "📋 Mis evidencias" },
-          ].map((item) => (
+          {[{ label: "📊 Mis métricas" }, { label: "📤 Cargar evidencia" }, { label: "📋 Mis evidencias" }].map((item) => (
             <Box key={item.label} sx={{ px: 2, py: 1, mb: 0.5 }}>
-              <Typography sx={{ color: "#94a3b8", fontSize: 15, fontWeight: 500 }}>
-                {item.label}
-              </Typography>
+              <Typography sx={{ color: "#94a3b8", fontSize: 15, fontWeight: 500 }}>{item.label}</Typography>
             </Box>
           ))}
         </Box>
-
         <Box sx={{ borderTop: "1px solid rgba(255,255,255,0.1)", pt: 3 }}>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 2 }}>
             <Avatar sx={{ bgcolor: "#1e40af", width: 36, height: 36, fontSize: 14 }}>
@@ -151,15 +144,9 @@ function ConsultorDashboard() {
               <Typography sx={{ color: "#64748b", fontSize: 11 }}>Consultor Interno</Typography>
             </Box>
           </Box>
-          <Button
-            fullWidth
-            startIcon={<ExitToApp />}
-            onClick={handleLogout}
-            sx={{
-              color: "#64748b", justifyContent: "flex-start", textTransform: "none",
-              fontSize: 13, "&:hover": { color: "#ef4444", bgcolor: "rgba(239,68,68,0.1)" }
-            }}
-          >
+          <Button fullWidth startIcon={<ExitToApp />} onClick={handleLogout}
+            sx={{ color: "#64748b", justifyContent: "flex-start", textTransform: "none",
+              fontSize: 13, "&:hover": { color: "#ef4444", bgcolor: "rgba(239,68,68,0.1)" } }}>
             Cerrar Sesión
           </Button>
         </Box>
@@ -168,14 +155,9 @@ function ConsultorDashboard() {
       {/* Main content */}
       <Box sx={{ flex: 1, p: 4, overflowY: "auto" }}>
 
-        {/* Header */}
         <Box sx={{ mb: 4 }}>
-          <Typography variant="h4" sx={{ fontWeight: 800, color: "#0f172a", mb: 0.5 }}>
-            Panel del Consultor
-          </Typography>
-          <Typography sx={{ color: "#64748b", fontSize: 14 }}>
-            Gestión y carga de evidencias — EliteCorp Consulting Group
-          </Typography>
+          <Typography variant="h4" sx={{ fontWeight: 800, color: "#0f172a", mb: 0.5 }}>Panel del Consultor</Typography>
+          <Typography sx={{ color: "#64748b", fontSize: 14 }}>Gestión y carga de evidencias — EliteCorp Consulting Group</Typography>
         </Box>
 
         {/* Métricas */}
@@ -188,9 +170,7 @@ function ConsultorDashboard() {
             <Grid item xs={12} md={4} key={i}>
               <Card sx={{ borderRadius: 3, boxShadow: "0 1px 3px rgba(0,0,0,0.08)", border: "1px solid #e2e8f0" }}>
                 <CardContent sx={{ display: "flex", alignItems: "center", gap: 2, p: 3 }}>
-                  <Avatar sx={{ bgcolor: item.bg, color: item.color, width: 48, height: 48 }}>
-                    {item.icon}
-                  </Avatar>
+                  <Avatar sx={{ bgcolor: item.bg, color: item.color, width: 48, height: 48 }}>{item.icon}</Avatar>
                   <Box>
                     <Typography sx={{ fontSize: 13, color: "#64748b", fontWeight: 500 }}>{item.title}</Typography>
                     <Typography sx={{ fontSize: 28, fontWeight: 800, color: "#0f172a", lineHeight: 1.2 }}>{item.value}</Typography>
@@ -202,24 +182,17 @@ function ConsultorDashboard() {
         </Grid>
 
         {/* Gráfico + Formulario */}
-        <Grid container spacing={3} sx={{ mb: 4 }}>
+        <Box sx={{ display: "flex", gap: 3, mb: 4, alignItems: "flex-start" }}>
 
           {/* Gráfico */}
-          <Grid item xs={12} md={5}>
+          <Box sx={{ width: "280px", flexShrink: 0 }}>
             <Card sx={{ p: 3, borderRadius: 3, boxShadow: "0 1px 3px rgba(0,0,0,0.08)", border: "1px solid #e2e8f0" }}>
               <Typography sx={{ fontWeight: 700, color: "#0f172a", mb: 1 }}>Distribución</Typography>
-              <ResponsiveContainer width="100%" height={280}>
+              <ResponsiveContainer width="100%" height={220}>
                 <PieChart>
-                  <Pie
-                    data={dataPie}
-                    dataKey="value"
-                    cx="50%"
-                    cy="45%"
-                    innerRadius="30%"
-                    outerRadius="70%"
-                    paddingAngle={4}
-                    label={({ value }) => value > 0 ? value : ""}
-                  >
+                  <Pie data={dataPie} dataKey="value" cx="50%" cy="45%"
+                    innerRadius="30%" outerRadius="70%" paddingAngle={4}
+                    label={({ value }) => value > 0 ? value : ""}>
                     {COLORS.map((color, index) => <Cell key={index} fill={color} />)}
                   </Pie>
                   <Tooltip contentStyle={{ borderRadius: 8, border: "1px solid #e2e8f0" }} />
@@ -227,12 +200,12 @@ function ConsultorDashboard() {
                 </PieChart>
               </ResponsiveContainer>
             </Card>
-          </Grid>
+          </Box>
 
           {/* Formulario */}
-          <Grid item xs={12} md={7}>
+          <Box sx={{ flex: 1 }}>
             <Card sx={{ p: 3, borderRadius: 3, boxShadow: "0 1px 3px rgba(0,0,0,0.08)", border: "1px solid #e2e8f0" }}>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 3 }}>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
                 <Upload sx={{ color: "#1e40af", fontSize: 20 }} />
                 <Typography sx={{ fontWeight: 700, color: "#0f172a" }}>Cargar Evidencia</Typography>
               </Box>
@@ -243,86 +216,78 @@ function ConsultorDashboard() {
                 </Alert>
               )}
 
-              <TextField
-                label="Título *"
-                value={titulo}
-                onChange={(e) => setTitulo(e.target.value)}
-                fullWidth size="small" sx={{ mb: 2 }}
-              />
-
-              <TextField
-                select label="Proyecto"
-                value={proyecto}
-                onChange={(e) => setProyecto(e.target.value)}
-                fullWidth size="small" sx={{ mb: 2 }}
-              >
-                <MenuItem value="">Sin proyecto</MenuItem>
-                {PROYECTOS.map((p) => <MenuItem key={p} value={p}>{p}</MenuItem>)}
-              </TextField>
-
-              <TextField
-                select label="Hito"
-                value={hito}
-                onChange={(e) => setHito(e.target.value)}
-                fullWidth size="small" sx={{ mb: 2 }}
-              >
-                <MenuItem value="">Sin hito</MenuItem>
-                {HITOS.map((h) => <MenuItem key={h} value={h}>{h}</MenuItem>)}
-              </TextField>
-
-              <TextField
-                label="Descripción *"
-                value={descripcion}
-                onChange={(e) => setDescripcion(e.target.value)}
-                fullWidth multiline rows={3} size="small" sx={{ mb: 2 }}
-              />
-
-              <Button
-                variant="outlined"
-                component="label"
-                fullWidth
-                startIcon={<FolderOpen />}
-                sx={{
-                  mb: 2, textTransform: "none", justifyContent: "flex-start", px: 2,
-                  color: archivoNombre ? "#10b981" : "#64748b",
-                  borderColor: archivoNombre ? "#10b981" : "#e2e8f0",
-                  bgcolor: archivoNombre ? "#f0fdf4" : "#f8fafc",
-                  borderRadius: 2,
-                }}
-              >
-                {archivoNombre ? archivoNombre : "Adjuntar archivo (máx. 20MB)"}
-                <input type="file" hidden onChange={handleArchivo} />
-              </Button>
-
-              <Button
-                variant="contained"
-                startIcon={<Send />}
-                onClick={handleSubirEvidencia}
-                disabled={loading}
-                fullWidth
-                sx={{
-                  borderRadius: 2, textTransform: "none",
-                  background: "linear-gradient(135deg, #1e40af, #0f172a)",
-                  py: 1.3, fontSize: 14, fontWeight: 700,
-                  boxShadow: "0 4px 12px rgba(30,64,175,0.3)",
-                }}
-              >
-                {loading ? "Enviando..." : "Enviar a QA →"}
-              </Button>
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                <TextField
+                  label="Título *" value={titulo}
+                  onChange={(e) => setTitulo(e.target.value)}
+                  fullWidth size="small"
+                />
+                <Box sx={{ display: "flex", gap: 2 }}>
+                  <TextField
+                    select label="Proyecto" value={proyecto}
+                    onChange={(e) => setProyecto(e.target.value)}
+                    fullWidth size="small"
+                  >
+                    <MenuItem value="">Sin proyecto</MenuItem>
+                    {PROYECTOS.map((p) => <MenuItem key={p} value={p}>{p}</MenuItem>)}
+                  </TextField>
+                  <TextField
+                    select label="Hito" value={hito}
+                    onChange={(e) => setHito(e.target.value)}
+                    fullWidth size="small"
+                  >
+                    <MenuItem value="">Sin hito</MenuItem>
+                    {hitosDB.filter((h) => !proyecto || h.proyecto === proyecto).length > 0
+                      ? hitosDB.filter((h) => !proyecto || h.proyecto === proyecto).map((h) => (
+                          <MenuItem key={h.id} value={h.titulo}>
+                            {h.titulo} — {new Date(h.fecha_vencimiento).toLocaleDateString("es-AR")}
+                          </MenuItem>
+                        ))
+                      : <MenuItem disabled>No hay hitos para este proyecto</MenuItem>
+                    }
+                  </TextField>
+                </Box>
+                <TextField
+                  label="Descripción *" value={descripcion}
+                  onChange={(e) => setDescripcion(e.target.value)}
+                  fullWidth multiline rows={3} size="small"
+                />
+                <Button
+                  variant="outlined" component="label" fullWidth startIcon={<FolderOpen />}
+                  sx={{
+                    height: "40px", textTransform: "none", justifyContent: "flex-start", px: 2,
+                    color: archivoNombre ? "#10b981" : "#64748b",
+                    borderColor: archivoNombre ? "#10b981" : "#e2e8f0",
+                    bgcolor: archivoNombre ? "#f0fdf4" : "#f8fafc",
+                    borderRadius: 2, fontSize: 13,
+                  }}
+                >
+                  {archivoNombre ? archivoNombre : "Adjuntar archivo (máx. 20MB)"}
+                  <input type="file" hidden onChange={handleArchivo} />
+                </Button>
+                <Button
+                  variant="contained" startIcon={<Send />}
+                  onClick={handleSubirEvidencia} disabled={loading} fullWidth
+                  sx={{
+                    borderRadius: 2, textTransform: "none",
+                    background: "linear-gradient(135deg, #1e40af, #0f172a)",
+                    py: 1.2, fontSize: 14, fontWeight: 700,
+                    boxShadow: "0 4px 12px rgba(30,64,175,0.3)",
+                  }}
+                >
+                  {loading ? "Enviando..." : "Enviar a QA →"}
+                </Button>
+              </Box>
             </Card>
-          </Grid>
-        </Grid>
+          </Box>
+        </Box>
 
         {/* Lista de evidencias */}
         <Card sx={{ borderRadius: 3, boxShadow: "0 1px 3px rgba(0,0,0,0.08)", border: "1px solid #e2e8f0" }}>
           <Box sx={{ p: 3, borderBottom: "1px solid #f1f5f9", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <Typography sx={{ fontWeight: 700, color: "#0f172a" }}>Mis Evidencias</Typography>
-            <TextField
-              select label="Filtrar"
-              value={filtroEstado}
-              onChange={(e) => setFiltroEstado(e.target.value)}
-              size="small" sx={{ minWidth: 150 }}
-            >
+            <TextField select label="Filtrar" value={filtroEstado}
+              onChange={(e) => setFiltroEstado(e.target.value)} size="small" sx={{ minWidth: 150 }}>
               <MenuItem value="todos">Todos</MenuItem>
               <MenuItem value="pendiente">Pendientes</MenuItem>
               <MenuItem value="aprobada">Aprobadas</MenuItem>
@@ -343,12 +308,8 @@ function ConsultorDashboard() {
                 }}>
                   <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", mb: 0.5 }}>
                     <Typography sx={{ fontWeight: 700, fontSize: 14, color: "#0f172a" }}>{e.titulo}</Typography>
-                    <Chip
-                      label={e.estado.toUpperCase()}
-                      size="small"
-                      sx={{ ml: 2, flexShrink: 0 }}
-                      color={e.estado === "aprobada" ? "success" : e.estado === "rechazada" ? "error" : "warning"}
-                    />
+                    <Chip label={e.estado.toUpperCase()} size="small" sx={{ ml: 2, flexShrink: 0 }}
+                      color={e.estado === "aprobada" ? "success" : e.estado === "rechazada" ? "error" : "warning"} />
                   </Box>
                   <Typography sx={{ fontSize: 13, color: "#64748b", mb: 1 }}>{e.descripcion}</Typography>
                   <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", mt: 1 }}>
@@ -362,6 +323,14 @@ function ConsultorDashboard() {
                       <Box sx={{ bgcolor: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 2, px: 1.5, py: 0.5 }}>
                         <Typography sx={{ fontSize: 10, color: "#166534", fontWeight: 700, display: "block" }}>HITO</Typography>
                         <Typography sx={{ fontSize: 13, color: "#15803d", fontWeight: 600 }}>{e.hito}</Typography>
+                      </Box>
+                    )}
+                    {e.fecha_vencimiento && (
+                      <Box sx={{ bgcolor: "#fff7ed", border: "1px solid #fed7aa", borderRadius: 2, px: 1.5, py: 0.5 }}>
+                        <Typography sx={{ fontSize: 10, color: "#c2410c", fontWeight: 700, display: "block" }}>VENCE</Typography>
+                        <Typography sx={{ fontSize: 13, color: "#ea580c", fontWeight: 600 }}>
+                          {new Date(e.fecha_vencimiento).toLocaleDateString("es-AR")}
+                        </Typography>
                       </Box>
                     )}
                     {e.archivo_nombre && (

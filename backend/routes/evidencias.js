@@ -23,13 +23,12 @@ router.get("/", verificarToken, async (req, res) => {
 
 // POST /api/evidencias
 router.post("/", verificarToken, soloRol("Consultor", "QA"), async (req, res) => {
-  const { titulo, descripcion, archivo, archivo_nombre, archivo_tipo, proyecto, hito } = req.body;
+  const { titulo, descripcion, archivo, archivo_nombre, archivo_tipo, proyecto, hito, fecha_vencimiento } = req.body;
 
   if (!titulo || !descripcion) {
     return res.status(400).json({ message: "Título y descripción requeridos" });
   }
 
-  // Validar tamaño archivo (max 20MB en base64)
   if (archivo && archivo.length > 20 * 1024 * 1024 * 1.37) {
     return res.status(400).json({ message: "Archivo supera el límite de 20MB" });
   }
@@ -37,10 +36,10 @@ router.post("/", verificarToken, soloRol("Consultor", "QA"), async (req, res) =>
   try {
     const [result] = await pool.query(
       `INSERT INTO evidencias 
-        (titulo, descripcion, archivo, archivo_nombre, archivo_tipo, proyecto, hito, usuario, estado) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        (titulo, descripcion, archivo, archivo_nombre, archivo_tipo, proyecto, hito, fecha_vencimiento, usuario, estado) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [titulo, descripcion, archivo || null, archivo_nombre || null, archivo_tipo || null,
-       proyecto || null, hito || null, req.user.username, "pendiente"]
+       proyecto || null, hito || null, fecha_vencimiento || null, req.user.username, "pendiente"]
     );
 
     await pool.query(

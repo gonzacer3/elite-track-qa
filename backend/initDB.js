@@ -34,6 +34,13 @@ async function init() {
       await connection.query(`ALTER TABLE users ADD COLUMN email VARCHAR(100) DEFAULT NULL`);
     }
 
+    const [colsVenc] = await connection.query(`
+      SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+      WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'evidencias' AND COLUMN_NAME = 'fecha_vencimiento'
+    `);
+    if (colsVenc.length === 0) {
+      await connection.query(`ALTER TABLE evidencias ADD COLUMN fecha_vencimiento DATE DEFAULT NULL`);
+    }
     await connection.query(`
       CREATE TABLE IF NOT EXISTS evidencias (
        id INT AUTO_INCREMENT PRIMARY KEY,
@@ -44,6 +51,7 @@ async function init() {
        archivo_tipo VARCHAR(100) DEFAULT NULL,
        proyecto VARCHAR(100) DEFAULT NULL,
        hito VARCHAR(100) DEFAULT NULL,
+       fecha_vencimiento DATE DEFAULT NULL,
        usuario VARCHAR(50),
        estado ENUM('pendiente','aprobada','rechazada') DEFAULT 'pendiente',
        fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP

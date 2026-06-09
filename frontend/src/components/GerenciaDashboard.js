@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Grid, Card, CardContent, Typography, Button, Box, Avatar, Chip } from "@mui/material";
-import { Security, Assignment, NotificationsActive, ExitToApp, TrendingUp } from "@mui/icons-material";
+import { Grid, Card, CardContent, Typography, Button, Box, Avatar, Chip, TextField, Alert, MenuItem } from "@mui/material";
+import { Security, Assignment, NotificationsActive, ExitToApp, TrendingUp, AddCircle } from "@mui/icons-material";
 import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from "recharts";
 
 const BASE_URL = "http://localhost:3001";
+const PROYECTOS = ["EliteTrack QP", "Proyecto Alpha", "Proyecto Beta", "Otro"];
 
 function GerenciaDashboard() {
   const navigate = useNavigate();
@@ -16,7 +17,14 @@ function GerenciaDashboard() {
   const [evidencias, setEvidencias] = useState([]);
   const [hitos, setHitos] = useState([]);
 
-  useEffect(() => {
+  const [hitoTitulo, setHitoTitulo] = useState("");
+  const [hitoDescripcion, setHitoDescripcion] = useState("");
+  const [hitoFecha, setHitoFecha] = useState("");
+  const [hitoProyecto, setHitoProyecto] = useState("");
+  const [hitoMensaje, setHitoMensaje] = useState(null);
+  const [hitoLoading, setHitoLoading] = useState(false);
+
+  const cargarDatos = () => {
     fetch(`${BASE_URL}/api/auditoria`, { headers })
       .then((res) => res.json())
       .then((data) => setAuditoria(Array.isArray(data) ? data : []))
@@ -31,11 +39,46 @@ function GerenciaDashboard() {
       .then((res) => res.json())
       .then((data) => setHitos(Array.isArray(data) ? data : []))
       .catch(() => setHitos([]));
+  };
+
+  useEffect(() => {
+    cargarDatos();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleLogout = () => {
     localStorage.clear();
     navigate("/");
+  };
+
+  const handleCrearHito = async () => {
+    if (!hitoTitulo || !hitoFecha) {
+      setHitoMensaje({ tipo: "error", texto: "Título y fecha son obligatorios." });
+      return;
+    }
+    setHitoLoading(true);
+    try {
+      const res = await fetch(`${BASE_URL}/api/notificaciones/hitos`, {
+        method: "POST",
+        headers: { ...headers, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          titulo: hitoTitulo,
+          descripcion: hitoDescripcion,
+          fecha_vencimiento: hitoFecha,
+          proyecto: hitoProyecto,
+        }),
+      });
+      if (res.ok) {
+        setHitoMensaje({ tipo: "success", texto: "Hito creado correctamente." });
+        setHitoTitulo(""); setHitoDescripcion(""); setHitoFecha(""); setHitoProyecto("");
+        cargarDatos();
+      } else {
+        const data = await res.json();
+        setHitoMensaje({ tipo: "error", texto: data.message || "Error al crear hito." });
+      }
+    } catch {
+      setHitoMensaje({ tipo: "error", texto: "Error de conexión." });
+    }
+    setHitoLoading(false);
   };
 
   const aprobadas = evidencias.filter((e) => e.estado === "aprobada").length;
@@ -79,6 +122,7 @@ function GerenciaDashboard() {
             { label: "📊 Métricas del proyecto" },
             { label: "📈 Actividad del sistema" },
             { label: "⚠️ Hitos próximos" },
+            { label: "➕ Crear hito" },
             { label: "🔍 Registro de auditoría" },
           ].map((item) => (
             <Box key={item.label} sx={{ px: 2, py: 1, mb: 0.5 }}>
@@ -182,22 +226,77 @@ function GerenciaDashboard() {
                 </Box>
               ) : (
                 hitos.map((h, i) => (
-                  <Box key={i} sx={{
-                    p: 2, mb: 1, borderRadius: 2, bgcolor: "#fff7ed",
-                    border: "1px solid #fde68a",
-                  }}>
+                  <Box key={i} sx={{ p: 2, mb: 1, borderRadius: 2, bgcolor: "#fff7ed", border: "1px solid #fde68a" }}>
                     <Typography sx={{ fontWeight: 700, fontSize: 13, color: "#0f172a" }}>{h.titulo}</Typography>
                     <Typography sx={{ fontSize: 12, color: "#64748b" }}>{h.proyecto}</Typography>
-                    <Chip
-                      label={new Date(h.fecha_vencimiento).toLocaleDateString("es-AR")}
-                      color="warning" size="small" sx={{ mt: 1 }}
-                    />
+                    <Chip label={new Date(h.fecha_vencimiento).toLocaleDateString("es-AR")} color="warning" size="small" sx={{ mt: 1 }} />
                   </Box>
                 ))
               )}
             </Card>
           </Grid>
         </Grid>
+
+        {/* Crear Hito */}
+        <Card sx={{ p: 3, borderRadius: 3, boxShadow: "0 1px 3px rgba(0,0,0,0.08)", border: "1px solid #e2e8f0", mb: 4 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
+            <AddCircle sx={{ color: "#0d9488", fontSize: 20 }} />
+            <Typography sx={{ fontWeight: 700, color: "#0f172a" }}>Crear Nuevo Hito</Typography>
+          </Box>
+
+          {hitoMensaje && (
+            <Alert severity={hitoMensaje.tipo} sx={{ mb: 2, borderRadius: 2 }} onClose={() => setHitoMensaje(null)}>
+              {hitoMensaje.texto}
+            </Alert>
+          )}
+
+          <Grid container spacing={2}>
+            <Grid item xs={12} md={4}>
+              <TextField
+                label="Título del hito *"
+                value={hitoTitulo}
+                onChange={(e) => setHitoTitulo(e.target.value)}
+                fullWidth size="small"
+              />
+            </Grid>
+            <Grid item xs={12} md={3}>
+              <TextField
+                select label="Proyecto"
+                value={hitoProyecto}
+                onChange={(e) => setHitoProyecto(e.target.value)}
+                fullWidth size="small"
+              >
+                <MenuItem value="">Sin proyecto</MenuItem>
+                {PROYECTOS.map((p) => <MenuItem key={p} value={p}>{p}</MenuItem>)}
+              </TextField>
+            </Grid>
+            <Grid item xs={12} md={3}>
+              <TextField
+                label="Fecha de vencimiento *"
+                type="date"
+                value={hitoFecha}
+                onChange={(e) => setHitoFecha(e.target.value)}
+                fullWidth size="small"
+                InputLabelProps={{ shrink: true }}
+              />
+            </Grid>
+            <Grid item xs={12} md={2}>
+              <Button
+                variant="contained"
+                onClick={handleCrearHito}
+                disabled={hitoLoading}
+                fullWidth
+                sx={{
+                  height: "40px", borderRadius: 2, textTransform: "none",
+                  background: "linear-gradient(135deg, #0d9488, #0f172a)",
+                  fontWeight: 700,
+                }}
+              >
+                {hitoLoading ? "..." : "Crear"}
+              </Button>
+            </Grid>
+          </Grid>
+        </Card>
 
         {/* Registro de auditoría */}
         <Card sx={{ borderRadius: 3, boxShadow: "0 1px 3px rgba(0,0,0,0.08)", border: "1px solid #e2e8f0" }}>
