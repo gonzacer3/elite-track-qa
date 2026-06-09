@@ -231,6 +231,18 @@ function QADashboard() {
                       size="small"
                       color={e.estado === "aprobada" ? "success" : e.estado === "rechazada" ? "error" : "warning"}
                     />
+                    {e.archivo && (
+                      <Button size="small" variant="outlined"
+                        onClick={() => {
+                          const link = document.createElement("a");
+                          link.href = `data:${e.archivo_tipo};base64,${e.archivo}`;
+                          link.download = e.archivo_nombre || "evidencia";
+                          link.click();
+                        }}
+                        sx={{ textTransform: "none", fontSize: 12, borderRadius: 2 }}>
+                        Descargar
+                      </Button>
+                    )}
                     {e.estado === "pendiente" && (
                       <>
                         <Button size="small" variant="contained" color="success"
