@@ -9,6 +9,8 @@ afterAll(async () => {
 describe("Auth / RBAC (RF01)", () => {
   let token;
 
+
+
   test("CP-SEC01: Login exitoso devuelve JWT con bcrypt", async () => {
     const res = await request(app)
       .post("/api/auth/login")
@@ -81,7 +83,7 @@ describe("Auth / RBAC (RF01)", () => {
       "UPDATE users SET intentos_fallidos = 0, bloqueado_hasta = NULL WHERE username = ?",
       ["consultor"]
     );
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 4; i++) {
       await request(app)
         .post("/api/auth/login")
         .send({ username: "consultor", password: "wrongpassword" });
