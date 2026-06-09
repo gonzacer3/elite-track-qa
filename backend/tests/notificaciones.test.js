@@ -153,4 +153,56 @@ describe("Notificaciones (RF03)", () => {
     expect(res.statusCode).toBe(500);
     jest.restoreAllMocks();
   });
+
+
+  test("GET /hitos devuelve todos los hitos", async () => {
+    const res = await request(app)
+      .get("/api/notificaciones/hitos")
+      .set("Authorization", `Bearer ${tokenAdmin}`);
+    expect(res.statusCode).toBe(200);
+    expect(Array.isArray(res.body)).toBe(true);
+  });
+
+  test("GET /hitos sin token devuelve 401", async () => {
+    const res = await request(app).get("/api/notificaciones/hitos");
+    expect(res.statusCode).toBe(401);
+  });
+
+  test("POST /hitos crea un hito correctamente", async () => {
+    const res = await request(app)
+      .post("/api/notificaciones/hitos")
+      .set("Authorization", `Bearer ${tokenAdmin}`)
+      .send({
+        titulo: "Hito Test",
+        descripcion: "Test de creación",
+        fecha_vencimiento: "2026-12-31",
+        proyecto: "EliteTrack QP",
+      });
+    expect(res.statusCode).toBe(201);
+    expect(res.body.id).toBeDefined();
+    await pool.query("DELETE FROM hitos WHERE titulo = 'Hito Test'");
+  });
+
+  test("POST /hitos sin título devuelve 400", async () => {
+    const res = await request(app)
+      .post("/api/notificaciones/hitos")
+      .set("Authorization", `Bearer ${tokenAdmin}`)
+      .send({ fecha_vencimiento: "2026-12-31" });
+    expect(res.statusCode).toBe(400);
+  });
+
+  test("POST /hitos sin token devuelve 401", async () => {
+    const res = await request(app)
+      .post("/api/notificaciones/hitos")
+      .send({ titulo: "Test", fecha_vencimiento: "2026-12-31" });
+    expect(res.statusCode).toBe(401);
+  });
+
+  test("Cliente ve solo sus notificaciones", async () => {
+    const res = await request(app)
+      .get("/api/notificaciones")
+      .set("Authorization", `Bearer ${tokenCliente}`);
+    expect(res.statusCode).toBe(200);
+    expect(Array.isArray(res.body)).toBe(true);
+  });
 });
